@@ -19,13 +19,13 @@
 
 // CMiniEditApp
 
-BEGIN_MESSAGE_MAP(CMiniEditApp, CWinApp)
+BEGIN_MESSAGE_MAP(CMiniEditApp, CWinAppEx)
 	ON_COMMAND(ID_APP_ABOUT, &CMiniEditApp::OnAppAbout)
 	// Standard file based document commands
-	ON_COMMAND(ID_FILE_NEW, &CWinApp::OnFileNew)
-	ON_COMMAND(ID_FILE_OPEN, &CWinApp::OnFileOpen)
+	ON_COMMAND(ID_FILE_NEW, &CWinAppEx::OnFileNew)
+	ON_COMMAND(ID_FILE_OPEN, &CWinAppEx::OnFileOpen)
 	// Standard print setup command
-	ON_COMMAND(ID_FILE_PRINT_SETUP, &CWinApp::OnFilePrintSetup)
+	ON_COMMAND(ID_FILE_PRINT_SETUP, &CWinAppEx::OnFilePrintSetup)
 END_MESSAGE_MAP()
 
 
@@ -33,6 +33,8 @@ END_MESSAGE_MAP()
 
 CMiniEditApp::CMiniEditApp() noexcept
 {
+	m_bHiColorIcons = TRUE;
+
 	// support Restart Manager
 	m_dwRestartManagerSupportFlags = AFX_RESTART_MANAGER_SUPPORT_ALL_ASPECTS;
 #ifdef _MANAGED
@@ -69,7 +71,7 @@ BOOL CMiniEditApp::InitInstance()
 	InitCtrls.dwICC = ICC_WIN95_CLASSES;
 	InitCommonControlsEx(&InitCtrls);
 
-	CWinApp::InitInstance();
+	CWinAppEx::InitInstance();
 
 
 	EnableTaskbarInteraction(FALSE);
@@ -87,6 +89,16 @@ BOOL CMiniEditApp::InitInstance()
 	SetRegistryKey(_T("Local AppWizard-Generated Applications"));
 	LoadStdProfileSettings(4);  // Load standard INI file options (including MRU)
 
+
+	InitContextMenuManager();
+
+	InitKeyboardManager();
+
+	InitTooltipManager();
+	CMFCToolTipInfo ttParams;
+	ttParams.m_bVislManagerTheme = TRUE;
+	theApp.GetTooltipManager()->SetTooltipParams(AFX_TOOLTIP_TYPE_ALL,
+		RUNTIME_CLASS(CMFCToolTipCtrl), &ttParams);
 
 	// Register the application's document templates.  Document templates
 	//  serve as the connection between documents, frame windows and views
@@ -165,6 +177,25 @@ void CMiniEditApp::OnAppAbout()
 {
 	CAboutDlg aboutDlg;
 	aboutDlg.DoModal();
+}
+
+// CMiniEditApp customization load/save methods
+
+void CMiniEditApp::PreLoadState()
+{
+	BOOL bNameValid;
+	CString strName;
+	bNameValid = strName.LoadString(IDS_EDIT_MENU);
+	ASSERT(bNameValid);
+	GetContextMenuManager()->AddMenu(strName, IDR_POPUP_EDIT);
+}
+
+void CMiniEditApp::LoadCustomState()
+{
+}
+
+void CMiniEditApp::SaveCustomState()
+{
 }
 
 // CMiniEditApp message handlers

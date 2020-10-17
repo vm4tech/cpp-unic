@@ -26,7 +26,9 @@ BEGIN_MESSAGE_MAP(CMiniEditView, CEditView)
 	// Standard printing commands
 	ON_COMMAND(ID_FILE_PRINT, &CEditView::OnFilePrint)
 	ON_COMMAND(ID_FILE_PRINT_DIRECT, &CEditView::OnFilePrint)
-	ON_COMMAND(ID_FILE_PRINT_PREVIEW, &CEditView::OnFilePrintPreview)
+	ON_COMMAND(ID_FILE_PRINT_PREVIEW, &CMiniEditView::OnFilePrintPreview)
+	ON_WM_CONTEXTMENU()
+	ON_WM_RBUTTONUP()
 END_MESSAGE_MAP()
 
 // CMiniEditView construction/destruction
@@ -55,6 +57,14 @@ BOOL CMiniEditView::PreCreateWindow(CREATESTRUCT& cs)
 
 // CMiniEditView printing
 
+
+void CMiniEditView::OnFilePrintPreview()
+{
+#ifndef SHARED_HANDLERS
+	AFXPrintPreview(this);
+#endif
+}
+
 BOOL CMiniEditView::OnPreparePrinting(CPrintInfo* pInfo)
 {
 	// default CEditView preparation
@@ -71,6 +81,19 @@ void CMiniEditView::OnEndPrinting(CDC* pDC, CPrintInfo* pInfo)
 {
 	// Default CEditView end printing
 	CEditView::OnEndPrinting(pDC, pInfo);
+}
+
+void CMiniEditView::OnRButtonUp(UINT /* nFlags */, CPoint point)
+{
+	ClientToScreen(&point);
+	OnContextMenu(this, point);
+}
+
+void CMiniEditView::OnContextMenu(CWnd* /* pWnd */, CPoint point)
+{
+#ifndef SHARED_HANDLERS
+	theApp.GetContextMenuManager()->ShowPopupMenu(IDR_POPUP_EDIT, point.x, point.y, this, TRUE);
+#endif
 }
 
 

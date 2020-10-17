@@ -20,7 +20,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
-    <ProjectGuid>{E56CE107-8EFA-4638-8FC2-8CF7066A1934}</ProjectGuid>
+    <ProjectGuid>{26CCE3B5-522D-4C94-BBBA-45465178B2D6}</ProjectGuid>
     <Keyword>MFCProj</Keyword>
     <RootNamespace>MiniEdit</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
@@ -215,6 +215,8 @@
     <Image Include="res\MiniEdit.ico" />
     <Image Include="res\MiniEditDoc.ico" />
     <Image Include="res\Toolbar.bmp" />
+    <Image Include="res\Toolbar256.bmp" />
+    <Image Include="res\userimages.bmp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

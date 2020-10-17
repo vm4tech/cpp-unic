@@ -14,7 +14,7 @@
 // See MiniEdit.cpp for the implementation of this class
 //
 
-class CMiniEditApp : public CWinApp
+class CMiniEditApp : public CWinAppEx
 {
 public:
 	CMiniEditApp() noexcept;
@@ -25,6 +25,12 @@ public:
 	virtual BOOL InitInstance();
 
 // Implementation
+	BOOL  m_bHiColorIcons;
+
+	virtual void PreLoadState();
+	virtual void LoadCustomState();
+	virtual void SaveCustomState();
+
 	afx_msg void OnAppAbout();
 	DECLARE_MESSAGE_MAP()
 };

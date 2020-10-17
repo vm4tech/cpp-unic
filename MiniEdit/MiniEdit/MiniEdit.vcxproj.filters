@@ -69,6 +69,9 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
+    <Image Include="res\userimages.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
     <Image Include="res\MiniEditDoc.ico">
       <Filter>Resource Files</Filter>
     </Image>
@@ -76,6 +79,9 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="res\Toolbar.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Toolbar256.bmp">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
