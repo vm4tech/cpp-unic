@@ -1,4 +1,10 @@
+#WinGreet project ignore
 /WinGreet/.vs
 /WinGreet/Debug
 /WinGreet/WinGreet/Debug
-/MiniDraw
+
+
+#MiniDraw project ignore
+/MiniDraw/.vs
+/MiniDraw/Debug
+/MiniDraw/MiniDraw/Debug
