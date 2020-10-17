@@ -23,6 +23,9 @@
 IMPLEMENT_DYNCREATE(CMiniDrawView, CView)
 
 BEGIN_MESSAGE_MAP(CMiniDrawView, CView)
+	ON_WM_LBUTTONDOWN()
+	ON_WM_MOUSEMOVE()
+	ON_WM_LBUTTONUP()
 END_MESSAGE_MAP()
 
 // Создание или уничтожение CMiniDrawView
@@ -30,6 +33,8 @@ END_MESSAGE_MAP()
 CMiniDrawView::CMiniDrawView() noexcept
 {
 	// TODO: добавьте код создания
+	m_Dragging = 0;
+	m_HCross = AfxGetApp()->LoadStandardCursor(IDC_CROSS);
 
 }
 
@@ -80,3 +85,60 @@ CMiniDrawDoc* CMiniDrawView::GetDocument() const // встроена неотл�
 
 
 // Обработчики сообщений CMiniDrawView
+
+
+void CMiniDrawView::OnLButtonDown(UINT nFlags, CPoint point)
+{
+	// TODO: Add your message handler code here and/or call default
+	m_PointOrigin = point; // Начало линии
+	m_PointOld = point; 	 // Используют другие обработчики
+	SetCapture(); 			 // "Захват" сообщений от мыши окном
+	m_Dragging = 1; 		 // Идет рисование
+	RECT Rect;
+	GetClientRect(&Rect); // Координаты окна представления
+	ClientToScreen(&Rect);// Преобразуем в экранные 
+								 // (от верхнего левого угла)
+	::ClipCursor(&Rect);	 // Огр.перемещ.курс.пределами окна
+
+	CView::OnLButtonDown(nFlags, point);
+}
+
+
+void CMiniDrawView::OnMouseMove(UINT nFlags, CPoint point)
+{
+	// TODO: Add your message handler code here and/or call default
+	::SetCursor(m_HCross); // Установка типа курсора
+	if (m_Dragging)
+	{
+		CClientDC ClientDC(this);
+		ClientDC.SetROP2(R2_NOT);
+		ClientDC.MoveTo(m_PointOrigin);
+		ClientDC.LineTo(m_PointOld); 	// Стирание линии
+		ClientDC.MoveTo(m_PointOrigin);
+		ClientDC.LineTo(point); 	// Рисование новой линии
+		m_PointOld = point;
+	}
+
+	CView::OnMouseMove(nFlags, point);
+}
+
+
+void CMiniDrawView::OnLButtonUp(UINT nFlags, CPoint point)
+{
+	// TODO: Add your message handler code here and/or call default
+	if (m_Dragging)
+	{
+		m_Dragging = 0;
+		::ReleaseCapture(); // Отменить захват сообщений мыши
+		::ClipCursor(NULL); // Курсор двигается по всему экрану
+		CClientDC ClientDC(this);
+		ClientDC.SetROP2(R2_NOT);
+		ClientDC.MoveTo(m_PointOrigin);
+		ClientDC.LineTo(m_PointOld);
+		ClientDC.SetROP2(R2_COPYPEN);
+		ClientDC.MoveTo(m_PointOrigin);
+		ClientDC.LineTo(point);
+	}
+
+	CView::OnLButtonUp(nFlags, point);
+}

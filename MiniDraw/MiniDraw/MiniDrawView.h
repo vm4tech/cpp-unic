@@ -8,6 +8,11 @@
 class CMiniDrawView : public CView
 {
 protected: // создать только из сериализации
+	CString m_ClassName;
+	int m_Dragging;
+	HCURSOR m_HCross; // Дескриптор указателя мыши
+	CPoint m_PointOld;
+	CPoint m_PointOrigin;
 	CMiniDrawView() noexcept;
 	DECLARE_DYNCREATE(CMiniDrawView)
 
@@ -37,6 +42,10 @@ protected:
 // Созданные функции схемы сообщений
 protected:
 	DECLARE_MESSAGE_MAP()
+public:
+	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
+	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
+	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
 };
 
 #ifndef _DEBUG  // версия отладки в MiniDrawView.cpp
