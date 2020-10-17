@@ -1,5 +1,6 @@
-#MiniDraw project ignore
+#MiniEdit project ignore
 
-/MiniDraw/.vs
-/MiniDraw/Debug
-/MiniDraw/MiniDraw/Debug
+/MiniEdit/.vs
+/MiniEdit/Debug
+/MiniEdit/MiniEdit/Debug
+/MiniEdit/x64/Debug
