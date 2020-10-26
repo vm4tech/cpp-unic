@@ -1,7 +1,7 @@
-﻿  MainFrm.cpp
-  MiniDraw.cpp
-  MiniDrawDoc.cpp
-C:\Users\MaseDar\Desktop\Study\MacOSandLinux\Projects\MiniDraw\MiniDraw\MiniDrawDoc.cpp(159,28): warning C4244: 'return': conversion from 'INT_PTR' to 'int', possible loss of data
-  MiniDrawView.cpp
-  Generating Code...
+﻿  MiniDrawDoc.cpp
+C:\Users\MaseDar\Desktop\Study\MacOSandLinux\Projects\MiniDraw\MiniDraw\MiniDrawDoc.cpp(162,28): warning C4244: 'return': conversion from 'INT_PTR' to 'int', possible loss of data
+C:\Users\MaseDar\Desktop\Study\MacOSandLinux\Projects\MiniDraw\MiniDraw\MiniDrawDoc.cpp(169,12): warning C4244: 'initializing': conversion from 'INT_PTR' to 'int', possible loss of data
+C:\Users\MaseDar\Desktop\Study\MacOSandLinux\Projects\MiniDraw\MiniDraw\MiniDrawDoc.cpp(190,36): warning C4244: 'argument': conversion from 'INT_PTR' to 'BOOL', possible loss of data
+C:\Users\MaseDar\Desktop\Study\MacOSandLinux\Projects\MiniDraw\MiniDraw\MiniDrawDoc.cpp(197,12): warning C4244: 'initializing': conversion from 'INT_PTR' to 'int', possible loss of data
+C:\Users\MaseDar\Desktop\Study\MacOSandLinux\Projects\MiniDraw\MiniDraw\MiniDrawDoc.cpp(212,36): warning C4244: 'argument': conversion from 'INT_PTR' to 'BOOL', possible loss of data
   MiniDraw.vcxproj -> C:\Users\MaseDar\Desktop\Study\MacOSandLinux\Projects\MiniDraw\x64\Debug\MiniDraw.exe
