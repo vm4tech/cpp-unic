@@ -1,6 +1,6 @@
 #MiniEdit project ignore
 
 /MiniEdit/.vs
-/MiniEdit/Debug
+/MiniEdit/MiniEdit/x64
 /MiniEdit/MiniEdit/Debug
-/MiniEdit/x64/Debug
+/MiniEdit/x64
