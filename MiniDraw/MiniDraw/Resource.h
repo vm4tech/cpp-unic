@@ -23,13 +23,26 @@
 #define ID_EDIT_UNDO32773               32773
 #define ID_Menu                         32774
 #define ID_FILE_SAVEAS                  32775
+#define ID_TOOLS_LINE                   32776
+#define ID_TOOLS_RECTANGLE              32777
+#define ID_TOOLS_RECTFILL               32779
+#define ID_TOOLS_RECTROUND              32780
+#define ID_TOOLS_RECTROUNDFILL          32781
+#define ID_TOOLS_CIRCLE                 32782
+#define ID_TOOLS_CIRCLEFILL             32783
+#define ID_LINE_SINGLE                  32784
+#define ID_LINE_DOUBLE                  32785
+#define ID_LINE_TRIPLE                  32786
+#define ID_TOOLS_                       32787
+#define ID_LINES_SINGLE                 32788
+#define ID_VIEW_TOOLBAR32789            32789
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        310
-#define _APS_NEXT_COMMAND_VALUE         32776
+#define _APS_NEXT_RESOURCE_VALUE        312
+#define _APS_NEXT_COMMAND_VALUE         32790
 #define _APS_NEXT_CONTROL_VALUE         1000
 #define _APS_NEXT_SYMED_VALUE           310
 #endif
