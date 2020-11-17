@@ -79,7 +79,64 @@ void CFormat::OnPaint()
 {
 	CPaintDC dc(this); // device context for painting
 					   // TODO: Add your message handler code here
-					   // Do not call CDialog::OnPaint() for painting messages
+					   
+	CFont Font;
+	LOGFONT LF;
+	int LineHeight;
+	CFont* PtrOldFont;
+	int X, Y;
+
+	// заполнение структуры LF свойствами
+	// стандартного системного шрифта:
+	CFont TempFont;
+	if (m_Pitch == PITCH_VARIABLE)
+		TempFont.CreateStockObject(SYSTEM_FONT);
+	else
+		TempFont.CreateStockObject(SYSTEM_FIXED_FONT);
+	TempFont.GetObject(sizeof(LOGFONT), &LF);
+	// инициализируем поля lfWeight, lfItalic и lfUnderline:
+	if (m_Bold)
+		LF.lfWeight = FW_BOLD;
+	if (m_Italic)
+		LF.lfItalic = 1;
+	if (m_Underline)
+		LF.lfUnderline = 1;
+
+	// создание и выбор шрифта:
+	Font.CreateFontIndirect(&LF);
+	PtrOldFont = dc.SelectObject(&Font);
+	// задаем выравнивание:
+	switch (m_Justify)
+	{
+	case JUSTIFY_LEFT:
+		dc.SetTextAlign(TA_LEFT);
+		X = m_RectSample.left + 5;
+		break;
+	case JUSTIFY_CENTER:
+		dc.SetTextAlign(TA_CENTER);
+		X = (m_RectSample.left + m_RectSample.right) / 2;
+		break;
+	case JUSTIFY_RIGHT:
+		dc.SetTextAlign(TA_RIGHT);
+		X = m_RectSample.right - 5;
+		break;
+	}
+	// установка режима отображения фона:
+	dc.SetBkMode(TRANSPARENT); // прозрачный
+
+	// вывод строк текста:
+	LineHeight = LF.lfHeight * m_Spacing;
+	Y = m_RectSample.top + 15;
+	dc.TextOut(X, Y, _T("AaBbCdDdEeFf"));
+	Y += LineHeight;
+	dc.TextOut(X, Y, _T("GhHhIiJjKkLl"));
+	Y += LineHeight;
+	dc.TextOut(X, Y, _T("MmNnOoPpQqRr"));
+
+	// отмена выбора шрифта:
+	dc.SelectObject(PtrOldFont);
+	// Do not call CDialog::OnPaint() for painting messages
+
 }
 
 
