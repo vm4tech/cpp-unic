@@ -91,12 +91,18 @@ void CFormat::OnBnClickedBold()
 void CFormat::OnBnClickedItalic()
 {
 	// TODO: Add your control notification handler code here
+	m_Italic = !m_Italic;
+	InvalidateRect(&m_RectSample);
+	UpdateWindow();
 }
 
 
 void CFormat::OnBnClickedUnderline()
 {
 	// TODO: Add your control notification handler code here
+	m_Underline = !m_Underline;
+	InvalidateRect(&m_RectSample);
+	UpdateWindow();
 }
 
 
