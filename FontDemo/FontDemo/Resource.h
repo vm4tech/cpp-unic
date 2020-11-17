@@ -15,8 +15,8 @@
 #define IDC_VARIABLE                    1008
 #define IDC_FIXED                       1009
 #define IDC_EDIT1                       1010
+#define IDC_SPACING                     1010
 #define IDC_SAMPLE                      1011
-#define IDC_TAB1                        1012
 
 // Next default values for new objects
 // 

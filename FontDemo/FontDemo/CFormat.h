@@ -25,4 +25,14 @@ public:
 	BOOL m_Bold;
 	BOOL m_Italic;
 	BOOL m_Underline;
+	int m_Justify;
+	int m_Pitch;
+	int m_Spacing;
+	CEdit m_SpacingEdit;
+	virtual BOOL OnInitDialog();
+	afx_msg void OnPaint();
+	afx_msg void OnBnClickedBold();
+	afx_msg void OnBnClickedItalic();
+	afx_msg void OnBnClickedUnderline();
+	afx_msg void OnEnChangeSpacing();
 };

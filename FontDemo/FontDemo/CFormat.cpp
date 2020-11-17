@@ -43,9 +43,62 @@ void CFormat::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CFormat, CDialog)
 	
+	ON_WM_PAINT()
+	ON_BN_CLICKED(IDC_BOLD, &CFormat::OnBnClickedBold)
+	ON_BN_CLICKED(IDC_ITALIC, &CFormat::OnBnClickedItalic)
+	ON_BN_CLICKED(IDC_UNDERLINE, &CFormat::OnBnClickedUnderline)
+	ON_EN_CHANGE(IDC_SPACING, &CFormat::OnEnChangeSpacing)
 END_MESSAGE_MAP()
 
 
 // CFormat message handlers
 
 
+
+
+BOOL CFormat::OnInitDialog()
+{
+	CDialog::OnInitDialog();
+
+	// TODO:  Add extra initialization here
+
+	return TRUE;  // return TRUE unless you set the focus to a control
+				  // EXCEPTION: OCX Property Pages should return FALSE
+}
+
+
+void CFormat::OnPaint()
+{
+	CPaintDC dc(this); // device context for painting
+					   // TODO: Add your message handler code here
+					   // Do not call CDialog::OnPaint() for painting messages
+}
+
+
+void CFormat::OnBnClickedBold()
+{
+	// TODO: Add your control notification handler code here
+}
+
+
+void CFormat::OnBnClickedItalic()
+{
+	// TODO: Add your control notification handler code here
+}
+
+
+void CFormat::OnBnClickedUnderline()
+{
+	// TODO: Add your control notification handler code here
+}
+
+
+void CFormat::OnEnChangeSpacing()
+{
+	// TODO:  If this is a RICHEDIT control, the control will not
+	// send this notification unless you override the CDialog::OnInitDialog()
+	// function and call CRichEditCtrl().SetEventMask()
+	// with the ENM_CHANGE flag ORed into the mask.
+
+	// TODO:  Add your control notification handler code here
+}
