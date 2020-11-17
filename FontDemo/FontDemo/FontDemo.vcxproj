@@ -183,6 +183,7 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CFormat.h" />
     <ClInclude Include="FontDemo.h" />
     <ClInclude Include="FontDemoDoc.h" />
     <ClInclude Include="FontDemoView.h" />
@@ -193,6 +194,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CFormat.cpp" />
     <ClCompile Include="FontDemo.cpp" />
     <ClCompile Include="FontDemoDoc.cpp" />
     <ClCompile Include="FontDemoView.cpp" />
