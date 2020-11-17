@@ -125,28 +125,60 @@ void CFormat::OnEnChangeSpacing()
 void CFormat::OnBnClickedLeft()
 {
 	// TODO: Add your control notification handler code here
+	if (IsDlgButtonChecked(IDC_LEFT))
+	{
+		m_Justify = JUSTIFY_LEFT;
+		InvalidateRect(&m_RectSample);
+		UpdateWindow();
+	}
+
 }
 
 
 void CFormat::OnBnClickedCenter()
 {
 	// TODO: Add your control notification handler code here
+	if (IsDlgButtonChecked(IDC_CENTER))
+	{
+		m_Justify = JUSTIFY_CENTER;
+		InvalidateRect(&m_RectSample);
+		UpdateWindow();
+	}
 }
 
 
 void CFormat::OnBnClickedRight()
 {
 	// TODO: Add your control notification handler code here
+	if (IsDlgButtonChecked(IDC_RIGHT))
+	{
+		m_Justify = JUSTIFY_RIGHT;
+		InvalidateRect(&m_RectSample);
+		UpdateWindow();
+	}
 }
 
 
 void CFormat::OnBnClickedVariable()
 {
 	// TODO: Add your control notification handler code here
+	if (IsDlgButtonChecked(IDC_VARIABLE))
+	{
+		m_Pitch = PITCH_VARIABLE;
+		InvalidateRect(&m_RectSample);
+		UpdateWindow();
+	}
 }
 
 
 void CFormat::OnBnClickedFixed()
 {
 	// TODO: Add your control notification handler code here
+	if (IsDlgButtonChecked(IDC_FIXED))
+	{
+		m_Pitch = PITCH_FIXED;
+		InvalidateRect(&m_RectSample);
+		UpdateWindow();
+	}
+
 }
