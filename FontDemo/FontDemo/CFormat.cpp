@@ -47,12 +47,12 @@ BEGIN_MESSAGE_MAP(CFormat, CDialog)
 	ON_BN_CLICKED(IDC_BOLD, &CFormat::OnBnClickedBold)
 	ON_BN_CLICKED(IDC_ITALIC, &CFormat::OnBnClickedItalic)
 	ON_BN_CLICKED(IDC_UNDERLINE, &CFormat::OnBnClickedUnderline)
-	ON_EN_CHANGE(IDC_SPACING, &CFormat::OnEnChangeSpacing)
 	ON_BN_CLICKED(IDC_LEFT, &CFormat::OnBnClickedLeft)
 	ON_BN_CLICKED(IDC_CENTER, &CFormat::OnBnClickedCenter)
 	ON_BN_CLICKED(IDC_RIGHT, &CFormat::OnBnClickedRight)
 	ON_BN_CLICKED(IDC_VARIABLE, &CFormat::OnBnClickedVariable)
 	ON_BN_CLICKED(IDC_FIXED, &CFormat::OnBnClickedFixed)
+	ON_EN_CHANGE(IDC_SPACING, &CFormat::OnEnChangeSpacing)
 END_MESSAGE_MAP()
 
 
@@ -111,17 +111,6 @@ void CFormat::OnBnClickedUnderline()
 }
 
 
-void CFormat::OnEnChangeSpacing()
-{
-	// TODO:  If this is a RICHEDIT control, the control will not
-	// send this notification unless you override the CDialog::OnInitDialog()
-	// function and call CRichEditCtrl().SetEventMask()
-	// with the ENM_CHANGE flag ORed into the mask.
-
-	// TODO:  Add your control notification handler code here
-}
-
-
 void CFormat::OnBnClickedLeft()
 {
 	// TODO: Add your control notification handler code here
@@ -177,6 +166,25 @@ void CFormat::OnBnClickedFixed()
 	if (IsDlgButtonChecked(IDC_FIXED))
 	{
 		m_Pitch = PITCH_FIXED;
+		InvalidateRect(&m_RectSample);
+		UpdateWindow();
+	}
+
+}
+
+void CFormat::OnEnChangeSpacing()
+{
+	// TODO:  If this is a RICHEDIT control, the control will not
+	// send this notification unless you override the CDialog::OnInitDialog()
+	// function and call CRichEditCtrl().SetEventMask()
+	// with the ENM_CHANGE flag ORed into the mask.
+
+	// TODO:  Add your control notification handler code here
+	int Temp;
+	Temp = (int)GetDlgItemInt(IDC_SPACING);
+	if (Temp > 0 && Temp < 4)
+	{
+		m_Spacing = Temp;
 		InvalidateRect(&m_RectSample);
 		UpdateWindow();
 	}
