@@ -61,6 +61,9 @@ BOOL CFormat::OnInitDialog()
 	CDialog::OnInitDialog();
 
 	// TODO:  Add extra initialization here
+	GetDlgItem(IDC_SAMPLE)->GetWindowRect(&m_RectSample);
+	ScreenToClient(&m_RectSample);
+	m_SpacingEdit.LimitText(1);
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 				  // EXCEPTION: OCX Property Pages should return FALSE

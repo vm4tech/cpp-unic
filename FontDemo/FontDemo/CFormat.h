@@ -1,4 +1,6 @@
 #pragma once
+enum { JUSTIFY_LEFT, JUSTIFY_CENTER, JUSTIFY_RIGHT };
+enum { PITCH_VARIABLE, PITCH_FIXED };
 
 
 // CFormat dialog
@@ -6,6 +8,9 @@
 class CFormat : public CDialog
 {
 	DECLARE_DYNAMIC(CFormat)
+protected:
+	RECT m_RectSample;
+
 
 public:
 	CFormat(CWnd* pParent = nullptr);   // standard constructor
