@@ -1,7 +1,7 @@
-#MiniDraw project ignore
+#FontDemo project ignore
 
-/MiniDraw/.vs
-/MiniDraw/Debug
-/MiniDraw/x64/Debug
-/MiniDraw/MiniDraw/Debug
-/MiniDraw/MiniDraw/x64/Debug
+/FontDemo/.vs
+/FontDemo/Debug
+/FontDemo/x64/Debug
+/FontDemo/FontDemo/Debug
+/FontDemo/FontDemo/x64/Debug
