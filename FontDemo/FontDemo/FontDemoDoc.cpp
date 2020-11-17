@@ -150,4 +150,28 @@ void CFontDemoDoc::Dump(CDumpContext& dc) const
 void CFontDemoDoc::OnTextFormat()
 {
 	// TODO: Add your command handler code here
+	// объявление объекта класса диалогового окна:
+	CFormat FormatDlg;
+
+	// инициализация переменных класса:
+	FormatDlg.m_Bold = m_Bold;
+	FormatDlg.m_Italic = m_Italic;
+	FormatDlg.m_Justify = m_Justify;
+	FormatDlg.m_Pitch = m_Pitch;
+	FormatDlg.m_Spacing = m_Spacing;
+	FormatDlg.m_Underline = m_Underline;
+	// отображение диалогового окна:   
+	if (FormatDlg.DoModal() == IDOK)
+	{
+		// сохранение установленных значений:
+		m_Bold = FormatDlg.m_Bold;
+		m_Italic = FormatDlg.m_Italic;
+		m_Justify = FormatDlg.m_Justify;
+		m_Pitch = FormatDlg.m_Pitch;
+		m_Spacing = FormatDlg.m_Spacing;
+		m_Underline = FormatDlg.m_Underline;
+
+		// перерисовка текста:
+		UpdateAllViews(NULL);
+	}
 }
