@@ -135,7 +135,7 @@ void CFormat::OnPaint()
 
 	// מעלוםא גûבמנא רנטפעא:
 	dc.SelectObject(PtrOldFont);
-	// Do not call CDialog::OnPaint() for painting messages
+
 
 }
 
