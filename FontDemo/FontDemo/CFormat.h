@@ -40,4 +40,9 @@ public:
 	afx_msg void OnBnClickedItalic();
 	afx_msg void OnBnClickedUnderline();
 	afx_msg void OnEnChangeSpacing();
+	afx_msg void OnBnClickedLeft();
+	afx_msg void OnBnClickedCenter();
+	afx_msg void OnBnClickedRight();
+	afx_msg void OnBnClickedVariable();
+	afx_msg void OnBnClickedFixed();
 };

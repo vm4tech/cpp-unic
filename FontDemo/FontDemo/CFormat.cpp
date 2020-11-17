@@ -48,6 +48,11 @@ BEGIN_MESSAGE_MAP(CFormat, CDialog)
 	ON_BN_CLICKED(IDC_ITALIC, &CFormat::OnBnClickedItalic)
 	ON_BN_CLICKED(IDC_UNDERLINE, &CFormat::OnBnClickedUnderline)
 	ON_EN_CHANGE(IDC_SPACING, &CFormat::OnEnChangeSpacing)
+	ON_BN_CLICKED(IDC_LEFT, &CFormat::OnBnClickedLeft)
+	ON_BN_CLICKED(IDC_CENTER, &CFormat::OnBnClickedCenter)
+	ON_BN_CLICKED(IDC_RIGHT, &CFormat::OnBnClickedRight)
+	ON_BN_CLICKED(IDC_VARIABLE, &CFormat::OnBnClickedVariable)
+	ON_BN_CLICKED(IDC_FIXED, &CFormat::OnBnClickedFixed)
 END_MESSAGE_MAP()
 
 
@@ -114,4 +119,34 @@ void CFormat::OnEnChangeSpacing()
 	// with the ENM_CHANGE flag ORed into the mask.
 
 	// TODO:  Add your control notification handler code here
+}
+
+
+void CFormat::OnBnClickedLeft()
+{
+	// TODO: Add your control notification handler code here
+}
+
+
+void CFormat::OnBnClickedCenter()
+{
+	// TODO: Add your control notification handler code here
+}
+
+
+void CFormat::OnBnClickedRight()
+{
+	// TODO: Add your control notification handler code here
+}
+
+
+void CFormat::OnBnClickedVariable()
+{
+	// TODO: Add your control notification handler code here
+}
+
+
+void CFormat::OnBnClickedFixed()
+{
+	// TODO: Add your control notification handler code here
 }
