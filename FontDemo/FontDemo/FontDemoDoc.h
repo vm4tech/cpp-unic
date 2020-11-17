@@ -8,6 +8,15 @@
 
 class CFontDemoDoc : public CDocument
 {
+
+public:
+	BOOL m_Bold;
+	BOOL m_Italic;
+	int m_Justify;
+	int m_Pitch;
+	int m_Spacing;
+	BOOL m_Underline;
+
 protected: // create from serialization only
 	CFontDemoDoc() noexcept;
 	DECLARE_DYNCREATE(CFontDemoDoc)
@@ -45,4 +54,6 @@ protected:
 	// Helper function that sets search content for a Search Handler
 	void SetSearchContent(const CString& value);
 #endif // SHARED_HANDLERS
+public:
+	afx_msg void OnTextFormat();
 };

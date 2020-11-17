@@ -11,6 +11,7 @@
 #endif
 
 #include "FontDemoDoc.h"
+#include "CFormat.h"
 
 #include <propkey.h>
 
@@ -23,6 +24,7 @@
 IMPLEMENT_DYNCREATE(CFontDemoDoc, CDocument)
 
 BEGIN_MESSAGE_MAP(CFontDemoDoc, CDocument)
+	ON_COMMAND(ID_TEXT_FORMAT, &CFontDemoDoc::OnTextFormat)
 END_MESSAGE_MAP()
 
 
@@ -31,6 +33,13 @@ END_MESSAGE_MAP()
 CFontDemoDoc::CFontDemoDoc() noexcept
 {
 	// TODO: add one-time construction code here
+	m_Bold = FALSE;
+	m_Italic = FALSE;
+	m_Justify = JUSTIFY_LEFT;
+	m_Pitch = PITCH_VARIABLE;
+	m_Spacing = 1;
+	m_Underline = FALSE;
+
 
 }
 
@@ -136,3 +145,9 @@ void CFontDemoDoc::Dump(CDumpContext& dc) const
 
 
 // CFontDemoDoc commands
+
+
+void CFontDemoDoc::OnTextFormat()
+{
+	// TODO: Add your command handler code here
+}
