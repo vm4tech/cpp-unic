@@ -81,6 +81,10 @@ void CFormat::OnPaint()
 void CFormat::OnBnClickedBold()
 {
 	// TODO: Add your control notification handler code here
+	m_Bold = !m_Bold;
+	InvalidateRect(&m_RectSample);
+	UpdateWindow();
+
 }
 
 
