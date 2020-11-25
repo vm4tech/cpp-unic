@@ -1,0 +1,7 @@
+#TabDemo project ignore
+
+/TabDemo/.vs
+/TabDemo/Debug
+/TabDemo/x64/Debug
+/TabDemo/TabDemo/Debug
+/TabDemo/TabDemo/x64/Debug
