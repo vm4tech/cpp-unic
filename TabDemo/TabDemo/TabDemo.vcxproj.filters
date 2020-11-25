@@ -42,6 +42,12 @@
     <ClInclude Include="CStyle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CJustify.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CPitch.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="TabDemo.cpp">
@@ -60,6 +66,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CStyle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CJustify.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CPitch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

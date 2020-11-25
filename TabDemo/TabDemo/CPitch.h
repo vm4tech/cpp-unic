@@ -20,4 +20,9 @@ protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
 	DECLARE_MESSAGE_MAP()
+public:
+	int m_Pitch;
+	CEdit m_SpacingEdit;
+	int m_Spacing;
+	virtual BOOL OnInitDialog();
 };

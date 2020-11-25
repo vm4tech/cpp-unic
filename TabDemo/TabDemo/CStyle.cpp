@@ -13,7 +13,11 @@ IMPLEMENT_DYNAMIC(CStyle, CPropertyPage)
 
 CStyle::CStyle(CWnd* pParent /*=nullptr*/)
 	: CPropertyPage(IDD_DIALOG1, 0)
+	, m_Bold(FALSE)
+	, m_Italic(FALSE)
+	, m_Underline(FALSE)
 {
+
 }
 
 CStyle::~CStyle()
@@ -23,6 +27,9 @@ CStyle::~CStyle()
 void CStyle::DoDataExchange(CDataExchange* pDX)
 {
 	CPropertyPage::DoDataExchange(pDX);
+	DDX_Check(pDX, IDC_BOLD, m_Bold);
+	DDX_Check(pDX, IDC_ITALIC, m_Italic);
+	DDX_Check(pDX, IDC_UNDERLINE, m_Underline);
 }
 
 

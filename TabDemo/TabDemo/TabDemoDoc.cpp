@@ -11,6 +11,9 @@
 #endif
 
 #include "TabDemoDoc.h"
+#include "CStyle.h"
+#include "CPitch.h"
+#include "CJustify.h"
 
 #include <propkey.h>
 
@@ -23,6 +26,7 @@
 IMPLEMENT_DYNCREATE(CTabDemoDoc, CDocument)
 
 BEGIN_MESSAGE_MAP(CTabDemoDoc, CDocument)
+	ON_COMMAND(ID_TEXT_FORMAT, &CTabDemoDoc::OnTextFormat)
 END_MESSAGE_MAP()
 
 
@@ -31,6 +35,12 @@ END_MESSAGE_MAP()
 CTabDemoDoc::CTabDemoDoc() noexcept
 {
 	// TODO: add one-time construction code here
+	m_Bold = FALSE;
+	m_Italic = FALSE;
+	m_Justify = JUSTIFY_LEFT;
+	m_Pitch = PITCH_VARIABLE;
+	m_Spacing = 1;
+	m_Underline = FALSE;
 
 }
 
@@ -136,3 +146,45 @@ void CTabDemoDoc::Dump(CDumpContext& dc) const
 
 
 // CTabDemoDoc commands
+
+
+void CTabDemoDoc::OnTextFormat()
+{
+	// TODO: Add your command handler code here
+	// создание объекта диалогового окна с вкладками:
+	CPropertySheet PropertySheet(_T("Format"));
+
+	// создание объекта для каждой страницы:
+	CStyle StylePage;
+	CJustify JustifyPage;
+	CPitch PitchPage;
+
+	// добавление страниц к объекту диалогового окна:
+	PropertySheet.AddPage(&StylePage);
+	PropertySheet.AddPage(&JustifyPage);
+	PropertySheet.AddPage(&PitchPage);
+	// инициализация объектов страниц:
+	StylePage.m_Bold = m_Bold;
+	StylePage.m_Italic = m_Italic;
+	StylePage.m_Underline = m_Underline;
+	JustifyPage.m_Justify = m_Justify;
+	PitchPage.m_Pitch = m_Pitch;
+	PitchPage.m_Spacing = m_Spacing;
+
+	// отображение диалогового окна с вкладками:   
+	if (PropertySheet.DoModal() == IDOK)
+	{
+
+		// сохранение значений элементов управления страниц:
+		m_Bold = StylePage.m_Bold;
+		m_Italic = StylePage.m_Italic;
+		m_Underline = StylePage.m_Underline;
+		m_Justify = JustifyPage.m_Justify;
+		m_Pitch = PitchPage.m_Pitch;
+		m_Spacing = PitchPage.m_Spacing;
+
+		// перерисовка текста:
+		UpdateAllViews(NULL);
+	}
+
+}

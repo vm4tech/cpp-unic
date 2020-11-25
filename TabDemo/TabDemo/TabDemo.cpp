@@ -31,6 +31,15 @@ END_MESSAGE_MAP()
 
 CTabDemoApp::CTabDemoApp() noexcept
 {
+	// support Restart Manager
+	m_dwRestartManagerSupportFlags = AFX_RESTART_MANAGER_SUPPORT_ALL_ASPECTS;
+#ifdef _MANAGED
+	// If the application is built using Common Language Runtime support (/clr):
+	//     1) This additional setting is needed for Restart Manager support to work properly.
+	//     2) In your project, you must add a reference to System.Windows.Forms in order to build.
+	System::Windows::Forms::Application::SetUnhandledExceptionMode(System::Windows::Forms::UnhandledExceptionMode::ThrowException);
+#endif
+
 	// TODO: replace application ID string below with unique ID string; recommended
 	// format for string is CompanyName.ProductName.SubProduct.VersionInformation
 	SetAppID(_T("TabDemo.AppID.NoVersion"));
@@ -48,8 +57,20 @@ CTabDemoApp theApp;
 
 BOOL CTabDemoApp::InitInstance()
 {
+	
+	// InitCommonControlsEx() is required on Windows XP if an application
+	// manifest specifies use of ComCtl32.dll version 6 or later to enable
+	// visual styles.  Otherwise, any window creation will fail.
+	INITCOMMONCONTROLSEX InitCtrls;
+	InitCtrls.dwSize = sizeof(InitCtrls);
+	// Set this to include all the common control classes you want to use
+	// in your application.
+	InitCtrls.dwICC = ICC_WIN95_CLASSES;
+	InitCommonControlsEx(&InitCtrls);
+
 	CWinApp::InitInstance();
 
+	AfxEnableControlContainer();
 
 	EnableTaskbarInteraction(FALSE);
 
@@ -94,6 +115,7 @@ BOOL CTabDemoApp::InitInstance()
 	// The one and only window has been initialized, so show and update it
 	m_pMainWnd->ShowWindow(SW_SHOW);
 	m_pMainWnd->UpdateWindow();
+	m_pMainWnd->SetWindowText(_T("Tabbed Dialog Box Demo"));
 	return TRUE;
 }
 
@@ -140,6 +162,3 @@ void CTabDemoApp::OnAppAbout()
 }
 
 // CTabDemoApp message handlers
-
-
-

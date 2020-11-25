@@ -20,4 +20,8 @@ protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
 	DECLARE_MESSAGE_MAP()
+public:
+	BOOL m_Bold;
+	BOOL m_Italic;
+	BOOL m_Underline;
 };
