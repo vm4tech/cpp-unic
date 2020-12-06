@@ -1,0 +1,7 @@
+#DlgDemo project ignore
+
+/DlgDemo/.vs
+/DlgDemo/Debug
+/DlgDemo/x64/Debug
+/DlgDemo/DlgDemo/Debug
+/DlgDemo/DlgDemo/x64/Debug
