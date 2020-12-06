@@ -1,0 +1,7 @@
+#FormDemo project ignore
+
+/FormDemo/.vs
+/FormDemo/Debug
+/FormDemo/x64/Debug
+/FormDemo/FormDemo/Debug
+/FormDemo/FormDemo/x64/Debug
