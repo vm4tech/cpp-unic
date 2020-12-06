@@ -7,6 +7,14 @@
 
 class CFormDemoView : public CFormView
 {
+
+public:
+	CBrush m_DialogBrush;
+	int m_Intensity;
+	CRect m_RectSample;
+
+	enum { INT_DARK, INT_LIGHT };
+
 protected: // create from serialization only
 	CFormDemoView() noexcept;
 	DECLARE_DYNCREATE(CFormDemoView)
@@ -37,12 +45,26 @@ public:
 	virtual void AssertValid() const;
 	virtual void Dump(CDumpContext& dc) const;
 #endif
+public:
+	BOOL m_Blue;
+	BOOL m_Green;
+	BOOL m_Red;
 
 protected:
 
 // Generated message map functions
 protected:
 	DECLARE_MESSAGE_MAP()
+public:
+	afx_msg void OnBnClickedCheck1();
+	afx_msg void OnClickedRed();
+	afx_msg void OnOptionsLight();
+	afx_msg void OnUpdateOptionsLight(CCmdUI* pCmdUI);
+	afx_msg void OnOptionsDark();
+	afx_msg void OnUpdateOptionsDark(CCmdUI* pCmdUI);
+	afx_msg void OnClickedGreen();
+	afx_msg void OnClickedBlue();
+	virtual void OnDraw(CDC* /*pDC*/);
 };
 
 #ifndef _DEBUG  // debug version in FormDemoView.cpp
