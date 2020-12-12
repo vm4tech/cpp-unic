@@ -1,0 +1,7 @@
+#TextDemo project ignore
+
+/TextDemo/.vs
+/TextDemo/Debug
+/TextDemo/x64/Debug
+/TextDemo/TextDemo/Debug
+/TextDemo/TextDemo/x64/Debug
