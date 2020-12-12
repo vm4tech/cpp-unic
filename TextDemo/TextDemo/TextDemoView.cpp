@@ -92,15 +92,15 @@ void CTextDemoView::OnDraw(CDC* /*pDC*/)
 
 }
 
-void CTextDemoView::OnInitialUpdate()
-{
-	CScrollView::OnInitialUpdate();
-
-	CSize sizeTotal;
-	// TODO: calculate the total size of this view
-	sizeTotal.cx = sizeTotal.cy = 100;
-	SetScrollSizes(MM_TEXT, sizeTotal);
-}
+//void CTextDemoView::OnInitialUpdate()
+//{
+//	CScrollView::OnInitialUpdate();
+//
+//	CSize sizeTotal;
+//	// TODO: calculate the total size of this view
+//	sizeTotal.cx = sizeTotal.cy = 100;
+//	SetScrollSizes(MM_TEXT, sizeTotal);
+//}
 
 
 // CTextDemoView diagnostics
@@ -125,3 +125,39 @@ CTextDemoDoc* CTextDemoView::GetDocument() const // non-debug version is inline
 
 
 // CTextDemoView message handlers
+
+
+void CTextDemoView::OnUpdate(CView* /*pSender*/, LPARAM /*lHint*/, CObject* /*pHint*/)
+{
+	// TODO: Add your specialized code here and/or call the base class
+	CTextDemoDoc* PDoc = GetDocument();
+
+	if (PDoc->m_Font.m_hObject == NULL)  // רנטפע םו סמחהאם 
+		SetScrollSizes(MM_TEXT, CSize(0, 0));
+	else                                 // רנטפע סמחהאם
+	{
+		CClientDC ClientDC(this);
+		int LineWidth = 0;
+		SIZE Size;
+		TEXTMETRIC TM;
+
+		ClientDC.SelectObject(&PDoc->m_Font);
+		ClientDC.GetTextMetrics(&TM);
+		for (int Line = 0; Line < NUMLINES; ++Line)
+		{
+			Size = ClientDC.GetTextExtent
+			(PDoc->m_LineTable[Line],
+				PDoc->m_LineTable[Line].GetLength());
+			if (Size.cx > LineWidth)
+				LineWidth = Size.cx;
+		}
+
+		Size.cx = LineWidth + MARGIN;
+		Size.cy = (TM.tmHeight + TM.tmExternalLeading) *
+			(NUMLINES + 1) + MARGIN;
+		SetScrollSizes(MM_TEXT, Size);
+		ScrollToPosition(CPoint(0, 0));
+	}
+	CScrollView::OnUpdate(pSender, lHint, pHint);
+
+}
