@@ -142,5 +142,3 @@ void CTextDemoApp::OnAppAbout()
 
 // CTextDemoApp message handlers
 
-
-
