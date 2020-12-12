@@ -47,7 +47,7 @@ BOOL CTextDemoView::PreCreateWindow(CREATESTRUCT& cs)
 
 // CTextDemoView drawing
 
-void CTextDemoView::OnDraw(CDC* /*pDC*/)
+void CTextDemoView::OnDraw(CDC* pDC)
 {
 	CTextDemoDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
@@ -127,7 +127,7 @@ CTextDemoDoc* CTextDemoView::GetDocument() const // non-debug version is inline
 // CTextDemoView message handlers
 
 
-void CTextDemoView::OnUpdate(CView* /*pSender*/, LPARAM /*lHint*/, CObject* /*pHint*/)
+void CTextDemoView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 {
 	// TODO: Add your specialized code here and/or call the base class
 	CTextDemoDoc* PDoc = GetDocument();
