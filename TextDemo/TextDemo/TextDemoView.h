@@ -4,7 +4,8 @@
 
 #pragma once
 
-
+const int MARGIN = 10; 	// расстояние от текста до верхней и 
+					// левой границы окна представления
 class CTextDemoView : public CScrollView
 {
 protected: // create from serialization only

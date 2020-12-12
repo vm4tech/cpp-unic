@@ -55,6 +55,41 @@ void CTextDemoView::OnDraw(CDC* /*pDC*/)
 		return;
 
 	// TODO: add draw code for native data here
+	// возврат, если шрифт не создан: 
+	if (pDoc->m_Font.m_hObject == NULL)
+		return;
+
+	RECT ClipRect;
+	int LineHeight;
+	TEXTMETRIC TM;
+	int Y = MARGIN;
+
+	// выбор шрифта в объект контекста устройства: 
+	pDC->SelectObject(&pDoc->m_Font);
+
+	// получение метрики текста: 
+	pDC->GetTextMetrics(&TM);
+	LineHeight = TM.tmHeight + TM.tmExternalLeading;
+
+	// установка атрибутов текста: 
+	pDC->SetTextColor(pDoc->m_Color);
+	pDC->SetBkMode(TRANSPARENT);
+
+	// получение координат недействительной области: 
+	pDC->GetClipBox(&ClipRect);
+
+	// отображение строки заголовка: 
+	pDC->TextOut(MARGIN, Y, _T("FONT PROPERTIES"));
+	// отображение строк текста: 
+	for (int Line = 0; Line < NUMLINES; ++Line)
+	{
+		Y += LineHeight;
+		if (Y + LineHeight >= ClipRect.top && Y <=
+			ClipRect.bottom)
+			pDC->TextOut(MARGIN, Y,
+				pDoc->m_LineTable[Line]);
+	}
+
 }
 
 void CTextDemoView::OnInitialUpdate()

@@ -505,5 +505,4 @@ void CTextDemoDoc::OnOptionsFont()
 
     // force redrawing of view window:
     UpdateAllViews(NULL);
-
 }
