@@ -1,0 +1,7 @@
+#Echo project ignore
+
+/Echo/.vs
+/Echo/Debug
+/Echo/x64/Debug
+/Echo/Echo/Debug
+/Echo/Echo/x64/Debug
