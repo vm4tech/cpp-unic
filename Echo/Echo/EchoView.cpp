@@ -25,6 +25,9 @@ IMPLEMENT_DYNCREATE(CEchoView, CView)
 BEGIN_MESSAGE_MAP(CEchoView, CView)
 	ON_WM_CHAR()
 	ON_COMMAND(ID_EDIT_CLEAR, &CEchoView::OnEditClear)
+	ON_WM_CREATE()
+	ON_WM_KILLFOCUS()
+	ON_WM_SETFOCUS()
 END_MESSAGE_MAP()
 
 // CEchoView construction/destruction
@@ -32,7 +35,7 @@ END_MESSAGE_MAP()
 CEchoView::CEchoView() noexcept
 {
 	// TODO: add construction code here
-
+	m_CaretPos.x = m_CaretPos.y = 0;
 }
 
 CEchoView::~CEchoView()
@@ -105,7 +108,13 @@ void CEchoView::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 
 	ClientDC.SetTextColor(::GetSysColor(COLOR_WINDOWTEXT));
 	ClientDC.SetBkMode(TRANSPARENT);
+	HideCaret();
 	ClientDC.TextOut(0, 0, PDoc->m_TextLine);
+	CSize Size = ClientDC.GetTextExtent(PDoc->m_TextLine,
+		PDoc->m_TextLine.GetLength());
+	m_CaretPos.x = Size.cx;
+	SetCaretPos(m_CaretPos);
+	ShowCaret();
 
 	CView::OnChar(nChar, nRepCnt, nFlags);
 }
@@ -117,5 +126,44 @@ void CEchoView::OnEditClear()
 	CEchoDoc* PDoc = GetDocument();
 	PDoc->m_TextLine.Empty();
 	PDoc->UpdateAllViews(NULL);
+	m_CaretPos.x = 0;
+	SetCaretPos(m_CaretPos);
+
+}
+
+
+int CEchoView::OnCreate(LPCREATESTRUCT lpCreateStruct)
+{
+	if (CView::OnCreate(lpCreateStruct) == -1)
+		return -1;
+
+	// TODO:  Add your specialized creation code here
+	CClientDC ClientDC(this);
+	TEXTMETRIC TM;
+	ClientDC.GetTextMetrics(&TM);
+	m_XCaret = TM.tmAveCharWidth / 3;
+	m_YCaret = TM.tmHeight + TM.tmExternalLeading;
+
+	return 0;
+}
+
+
+void CEchoView::OnKillFocus(CWnd* pNewWnd)
+{
+	CView::OnKillFocus(pNewWnd);
+
+	// TODO: Add your message handler code here
+	::DestroyCaret();
+}
+
+
+void CEchoView::OnSetFocus(CWnd* pOldWnd)
+{
+	CView::OnSetFocus(pOldWnd);
+
+	// TODO: Add your message handler code here
+	CreateSolidCaret(m_XCaret, m_YCaret);
+	SetCaretPos(m_CaretPos);
+	ShowCaret();
 
 }

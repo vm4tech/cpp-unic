@@ -7,6 +7,10 @@
 
 class CEchoView : public CView
 {
+private:
+	POINT m_CaretPos;
+	int m_XCaret, m_YCaret;
+
 protected: // create from serialization only
 	CEchoView() noexcept;
 	DECLARE_DYNCREATE(CEchoView)
@@ -37,6 +41,12 @@ protected:
 // Generated message map functions
 protected:
 	DECLARE_MESSAGE_MAP()
+public:
+	afx_msg void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
+	afx_msg void OnEditClear();
+	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+	afx_msg void OnKillFocus(CWnd* pNewWnd);
+	afx_msg void OnSetFocus(CWnd* pOldWnd);
 };
 
 #ifndef _DEBUG  // debug version in EchoView.cpp
