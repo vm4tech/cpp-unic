@@ -1,0 +1,7 @@
+#ToDoList project ignore
+
+/ToDoList/.vs
+/ToDoList/Debug
+/ToDoList/x64/Debug
+/ToDoList/ToDoList/Debug
+/ToDoList/ToDoList/x64/Debug
