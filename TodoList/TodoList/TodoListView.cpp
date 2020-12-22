@@ -98,23 +98,33 @@ void CTodoListView::OnBnClickedAdd()
 	// TODO: Add your control notification handler code here
 	CString strText;
 
-
 	UpdateData();
-
 	strText = m_txtListbox;
-
 	UpdateData(FALSE);
-	m_ctlListBox.AddString(strText); //This is where the actual data is added
+	m_ctlListBox.AddString(strText); //«десь добавл€ютс€ актуальные данные
 }
 
 
 void CTodoListView::OnBnClickedRemove()
 {
 	// TODO: Add your control notification handler code here
+	int index;
+	CString strText;
+	index = m_ctlListBox.GetCurSel();
+
+	m_ctlListBox.DeleteString(index);
 }
 
 
 void CTodoListView::OnBnClickedGet()
 {
 	// TODO: Add your control notification handler code here
+	int index;
+
+	CString strText;
+
+	index = m_ctlListBox.GetCurSel();
+	m_ctlListBox.GetText(index, strText);
+
+	MessageBox(strText);
 }
