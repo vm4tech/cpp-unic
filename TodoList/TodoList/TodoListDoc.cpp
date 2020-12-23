@@ -59,10 +59,12 @@ void CTodoListDoc::Serialize(CArchive& ar)
 	if (ar.IsStoring())
 	{
 		// TODO: add storing code here
+		m_ListBoxArray.Serialize(ar);
 	}
 	else
 	{
 		// TODO: add loading code here
+		m_ListBoxArray.Serialize(ar);
 	}
 }
 

@@ -3,7 +3,7 @@
 //
 
 #pragma once
-
+#include "CListBoxCustom.h"
 
 class CTodoListView : public CFormView
 {
@@ -50,8 +50,14 @@ public:
 	afx_msg void OnBnClickedAdd();
 	afx_msg void OnBnClickedRemove();
 	afx_msg void OnBnClickedGet();
+	afx_msg void OnBnClickedRowsSquared();
 	CListBox m_ctlListBox;
 	CString m_txtListbox;
+	CListBoxCustom m_ListBoxCustom;
+	
+
+	
+	afx_msg void OnBnClickedAllActions();
 };
 
 #ifndef _DEBUG  // debug version in TodoListView.cpp

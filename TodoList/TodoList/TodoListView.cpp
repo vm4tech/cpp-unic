@@ -17,6 +17,8 @@
 #define new DEBUG_NEW
 #endif
 
+#include "CListBoxCustom.h"
+
 
 // CTodoListView
 
@@ -26,6 +28,8 @@ BEGIN_MESSAGE_MAP(CTodoListView, CFormView)
 	ON_BN_CLICKED(IDC_ADD, &CTodoListView::OnBnClickedAdd)
 	ON_BN_CLICKED(IDC_REMOVE, &CTodoListView::OnBnClickedRemove)
 	ON_BN_CLICKED(IDC_GET, &CTodoListView::OnBnClickedGet)
+	ON_BN_CLICKED(IDC_ROWS_SQUARED, &CTodoListView::OnBnClickedRowsSquared)
+	ON_BN_CLICKED(IDC_ALL_ACTIONS, &CTodoListView::OnBnClickedAllActions)
 END_MESSAGE_MAP()
 
 // CTodoListView construction/destruction
@@ -34,6 +38,9 @@ CTodoListView::CTodoListView() noexcept
 	: CFormView(IDD_TODOLIST_FORM)
 	, m_ctlListBox()
 	, m_txtListbox(_T(""))
+	, m_ListBoxCustom()
+
+
 {	
 	
 	// TODO: add construction code here
@@ -97,11 +104,13 @@ void CTodoListView::OnBnClickedAdd()
 {
 	// TODO: Add your control notification handler code here
 	CString strText;
-
+	CListBoxCustom count;
 	UpdateData();
 	strText = m_txtListbox;
 	UpdateData(FALSE);
+	
 	m_ctlListBox.AddString(strText); //«десь добавл€ютс€ актуальные данные
+	
 }
 
 
@@ -109,9 +118,10 @@ void CTodoListView::OnBnClickedRemove()
 {
 	// TODO: Add your control notification handler code here
 	int index;
+	CListBoxCustom count;
 	CString strText;
 	index = m_ctlListBox.GetCurSel();
-
+	
 	m_ctlListBox.DeleteString(index);
 }
 
@@ -120,11 +130,35 @@ void CTodoListView::OnBnClickedGet()
 {
 	// TODO: Add your control notification handler code here
 	int index;
-
+	CListBoxCustom count;
 	CString strText;
-
 	index = m_ctlListBox.GetCurSel();
 	m_ctlListBox.GetText(index, strText);
 
 	MessageBox(strText);
+}
+
+
+void CTodoListView::OnBnClickedRowsSquared()
+{
+	// TODO: Add your control notification handler code here
+	int rows;
+	CString strText;
+	CListBoxCustom sqRows;
+	
+	rows = m_ctlListBox.GetCount();
+
+	int squareRows = sqRows.RowsSquared(rows);
+	strText.Format(_T("%d"), squareRows);
+	MessageBox(strText);
+}
+
+
+void CTodoListView::OnBnClickedAllActions()
+{
+	// TODO: Add your control notification handler code here
+	CListBoxCustom allActions;
+	CString str;
+	str.Format(_T("%d"));
+	MessageBox(str);
 }
