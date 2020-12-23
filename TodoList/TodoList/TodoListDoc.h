@@ -4,7 +4,7 @@
 
 
 #pragma once
-
+#include "CListBoxCustom.h"
 
 class CTodoListDoc : public CDocument
 {
@@ -12,7 +12,8 @@ class CTodoListDoc : public CDocument
 protected: // create from serialization only
 	CTodoListDoc() noexcept;
 	DECLARE_DYNCREATE(CTodoListDoc)
-	CTypedPtrArray <CObject, CListBox> m_ListBoxArray;
+	CTypedPtrArray <CObArray, CListBox*> m_ListBoxCustom;
+	//CListBoxCustom m_ListBoxCustom;
 
 
 // Attributes

@@ -4,6 +4,7 @@
 
 #pragma once
 #include "CListBoxCustom.h"
+#include "FindTodo.h"
 
 class CTodoListView : public CFormView
 {
@@ -54,10 +55,11 @@ public:
 	CListBox m_ctlListBox;
 	CString m_txtListbox;
 	CListBoxCustom m_ListBoxCustom;
-	
-
+	FindTodo m_findTODO;
 	
 	afx_msg void OnBnClickedAllActions();
+	afx_msg void OnClickedAllDelete();
+	afx_msg void OnClickedFindString();
 };
 
 #ifndef _DEBUG  // debug version in TodoListView.cpp

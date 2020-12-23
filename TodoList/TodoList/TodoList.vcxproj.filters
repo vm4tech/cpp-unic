@@ -42,6 +42,9 @@
     <ClInclude Include="CListBoxCustom.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FindTodo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="TodoList.cpp">
@@ -60,6 +63,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CListBoxCustom.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FindTodo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -18,7 +18,7 @@
 #endif
 
 #include "CListBoxCustom.h"
-
+#include "FindTodo.h"
 
 // CTodoListView
 
@@ -30,6 +30,8 @@ BEGIN_MESSAGE_MAP(CTodoListView, CFormView)
 	ON_BN_CLICKED(IDC_GET, &CTodoListView::OnBnClickedGet)
 	ON_BN_CLICKED(IDC_ROWS_SQUARED, &CTodoListView::OnBnClickedRowsSquared)
 	ON_BN_CLICKED(IDC_ALL_ACTIONS, &CTodoListView::OnBnClickedAllActions)
+	ON_BN_CLICKED(IDC_ALL_DELETE, &CTodoListView::OnClickedAllDelete)
+	ON_BN_CLICKED(IDC_FIND_STRING, &CTodoListView::OnClickedFindString)
 END_MESSAGE_MAP()
 
 // CTodoListView construction/destruction
@@ -39,12 +41,10 @@ CTodoListView::CTodoListView() noexcept
 	, m_ctlListBox()
 	, m_txtListbox(_T(""))
 	, m_ListBoxCustom()
-
-
 {	
 	
 	// TODO: add construction code here
-
+	
 }
 
 CTodoListView::~CTodoListView()
@@ -104,13 +104,11 @@ void CTodoListView::OnBnClickedAdd()
 {
 	// TODO: Add your control notification handler code here
 	CString strText;
-	CListBoxCustom count;
 	UpdateData();
 	strText = m_txtListbox;
 	UpdateData(FALSE);
-	
-	m_ctlListBox.AddString(strText); //«десь добавл€ютс€ актуальные данные
-	
+	CListBoxCustom::clickCount();
+	m_ctlListBox.AddString(strText); //«десь добавл€ютс€ актуальные данные	
 }
 
 
@@ -118,10 +116,9 @@ void CTodoListView::OnBnClickedRemove()
 {
 	// TODO: Add your control notification handler code here
 	int index;
-	CListBoxCustom count;
 	CString strText;
 	index = m_ctlListBox.GetCurSel();
-	
+	CListBoxCustom::clickCount();
 	m_ctlListBox.DeleteString(index);
 }
 
@@ -130,11 +127,10 @@ void CTodoListView::OnBnClickedGet()
 {
 	// TODO: Add your control notification handler code here
 	int index;
-	CListBoxCustom count;
 	CString strText;
 	index = m_ctlListBox.GetCurSel();
 	m_ctlListBox.GetText(index, strText);
-
+	CListBoxCustom::clickCount();
 	MessageBox(strText);
 }
 
@@ -147,7 +143,7 @@ void CTodoListView::OnBnClickedRowsSquared()
 	CListBoxCustom sqRows;
 	
 	rows = m_ctlListBox.GetCount();
-
+	CListBoxCustom::clickCount();
 	int squareRows = sqRows.RowsSquared(rows);
 	strText.Format(_T("%d"), squareRows);
 	MessageBox(strText);
@@ -157,8 +153,37 @@ void CTodoListView::OnBnClickedRowsSquared()
 void CTodoListView::OnBnClickedAllActions()
 {
 	// TODO: Add your control notification handler code here
-	CListBoxCustom allActions;
 	CString str;
-	str.Format(_T("%d"));
+	str.Format(_T("%d"), CListBoxCustom::getCount());
 	MessageBox(str);
+}
+
+
+void CTodoListView::OnClickedAllDelete()
+{
+	// TODO: Add your control notification handler code here
+	m_ctlListBox.ResetContent();
+	CString str;
+	str = "¬ы очистили список дел";
+	MessageBox(str);
+}
+
+
+void CTodoListView::OnClickedFindString()
+{
+	// TODO: Add your control notification handler code here
+
+	if (m_findTODO.DoModal() == IDOK)
+	{	
+		LPCTSTR lpszmyString = m_findTODO.m_FindTodoText;
+		int nIndex = 0;
+		while ((nIndex = m_ctlListBox.FindString(nIndex, lpszmyString)) != LB_ERR)
+		{
+			m_ctlListBox.DeleteString(nIndex);
+		}
+		//m_ctlListBox.FindString();
+		CString str;
+		str = "¬аш запрос:";
+		MessageBox(m_findTODO.m_FindTodoText, str );
+	}
 }
