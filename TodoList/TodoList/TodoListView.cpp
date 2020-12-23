@@ -169,6 +169,7 @@ void CTodoListView::OnClickedAllDelete()
 	m_ctlListBox.ResetContent();
 	CString str;
 	str = "Вы очистили список дел";
+	CListBoxCustom::clickCount();
 	MessageBox(str);
 }
 
@@ -176,7 +177,7 @@ void CTodoListView::OnClickedAllDelete()
 void CTodoListView::OnClickedFindString()
 {
 	// TODO: Add your control notification handler code here
-
+	CListBoxCustom::clickCount();
 	if (m_findTODO.DoModal() == IDOK)
 	{	
 		LPCTSTR lpszmyString = m_findTODO.m_FindTodoText;
