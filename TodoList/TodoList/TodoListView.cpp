@@ -108,7 +108,11 @@ void CTodoListView::OnBnClickedAdd()
 	strText = m_txtListbox;
 	UpdateData(FALSE);
 	CListBoxCustom::clickCount();
-	m_ctlListBox.AddString(strText); //«десь добавл€ютс€ актуальные данные	
+	m_ctlListBox.AddString(strText); //«десь добавл€ютс€ актуальные данные
+	UpdateData();
+	m_txtListbox.Empty();
+	UpdateData(FALSE);
+	
 }
 
 
