@@ -32,6 +32,7 @@ BEGIN_MESSAGE_MAP(CTodoListView, CFormView)
 	ON_BN_CLICKED(IDC_ALL_ACTIONS, &CTodoListView::OnBnClickedAllActions)
 	ON_BN_CLICKED(IDC_ALL_DELETE, &CTodoListView::OnClickedAllDelete)
 	ON_BN_CLICKED(IDC_FIND_STRING, &CTodoListView::OnClickedFindString)
+	ON_COMMAND(ID_FILE_SAVE, &CTodoListView::OnFileSave)
 END_MESSAGE_MAP()
 
 // CTodoListView construction/destruction
@@ -190,5 +191,25 @@ void CTodoListView::OnClickedFindString()
 		CString str;
 		str = "Ваш запрос:";
 		MessageBox(m_findTODO.m_FindTodoText, str );
+	}
+}
+
+
+void CTodoListView::OnFileSave()
+{
+	// TODO: Add your command handler code here
+	CTodoListDoc* pDoc = GetDocument();
+	CString str, str2;
+	int n;
+	for (int i = 0; i < m_ctlListBox.GetCount(); i++)
+	{
+		n = m_ctlListBox.GetTextLen(i);
+		m_ctlListBox.GetText(i, str.GetBuffer(n));
+		str.ReleaseBuffer();
+
+		pDoc->SetString(str2);
+		//str2.Format(_T("item %d: %s\r\n"), i, str.GetBuffer(0));
+
+		//MessageBox(str2);
 	}
 }

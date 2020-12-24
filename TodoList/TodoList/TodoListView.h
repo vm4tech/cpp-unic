@@ -60,6 +60,7 @@ public:
 	afx_msg void OnBnClickedAllActions();
 	afx_msg void OnClickedAllDelete();
 	afx_msg void OnClickedFindString();
+	afx_msg void OnFileSave();
 };
 
 #ifndef _DEBUG  // debug version in TodoListView.cpp

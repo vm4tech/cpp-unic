@@ -38,6 +38,22 @@ CTodoListDoc::~CTodoListDoc()
 {
 }
 
+// Add должен принимать тип CString, но почему то он не может этого сделать...
+void CTodoListDoc::SetString(CString str)
+{
+	// 1 Вариант!
+	//m_ListBoxCustom.Add(str);
+
+	// 2 Вариант!
+	m_ListBoxCustom.Add(&str);
+
+	// 3 Вариант!
+	/*CString *str2;
+	str2->Format(_T("%s"), str);
+	m_ListBoxCustom.Add(str2);*/
+	
+}
+
 BOOL CTodoListDoc::OnNewDocument()
 {
 	if (!CDocument::OnNewDocument())

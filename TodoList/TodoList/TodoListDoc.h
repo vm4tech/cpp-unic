@@ -8,11 +8,13 @@
 
 class CTodoListDoc : public CDocument
 {
+public:
+	void SetString(CString str);
 
 protected: // create from serialization only
 	CTodoListDoc() noexcept;
 	DECLARE_DYNCREATE(CTodoListDoc)
-	CTypedPtrArray <CObArray, CListBox*> m_ListBoxCustom;
+	CTypedPtrArray <CObArray, CString*> m_ListBoxCustom;
 	//CListBoxCustom m_ListBoxCustom;
 
 

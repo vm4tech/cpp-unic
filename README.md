@@ -24,3 +24,12 @@
 - `CTRL + Delete` - удаление всех задач
 - [ ] Сохранение, открытие документа (не смог реализовать сериализацию CListBox)
 
+## Комментарии по проблемам
+> Данный комментарий относится к 
+Пытался сделать сериализацию, но есть проблема:
+
+Так как я пытаюсь вытащить данные из CListBox и засунуть их в `CTypedPtrArray <CObArray, СString*> m_ListBoxCustom;` с помощью собственного метода в `CTodoListDoc::SetString(CString str)`. 
+
+В итоге ошибка: `'INT_PTR CObArray::Add(CObject *)': cannot convert argument 1 from 'TYPE' to 'CObject *'`
+
+Из-за этого я не могу понять, как мне сериализовать `CListBox`.
