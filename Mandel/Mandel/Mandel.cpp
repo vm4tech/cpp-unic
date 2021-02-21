@@ -1,4 +1,4 @@
-
+// Molotkov Vlad github.com/masedar
 // Mandel.cpp : Defines the class behaviors for the application.
 //
 
@@ -94,6 +94,7 @@ BOOL CMandelApp::InitInstance()
 	// The one and only window has been initialized, so show and update it
 	m_pMainWnd->ShowWindow(SW_SHOW);
 	m_pMainWnd->UpdateWindow();
+	m_pMainWnd->SetWindowText(_T("Mandelbrot Demo"));
 	return TRUE;
 }
 
@@ -143,3 +144,15 @@ void CMandelApp::OnAppAbout()
 
 
 
+
+
+BOOL CMandelApp::OnIdle(LONG lCount)
+{
+	// TODO: Add your specialized code here and/or call the base class
+	CWinApp::OnIdle(lCount); // Здесь убрать return!
+	CMandelView* PView =
+		(CMandelView*)((CFrameWnd*)m_pMainWnd)->GetActiveView();
+	PView->DrawCol();
+	return TRUE;
+
+}
