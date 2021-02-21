@@ -1,7 +1,7 @@
-#MiniDraw project ignore
+#Mandel project ignore
 
-/MiniDraw/.vs
-/MiniDraw/Debug
-/MiniDraw/x64/Debug
-/MiniDraw/MiniDraw/Debug
-/MiniDraw/MiniDraw/x64/Debug
+/Mandel/.vs
+/Mandel/Debug
+/Mandel/x64/Debug
+/Mandel/Mandel/Debug
+/Mandel/Mandel/x64/Debug
