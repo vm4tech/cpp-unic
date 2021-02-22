@@ -1,0 +1,7 @@
+#BitDemo project ignore
+
+/BitDemo/.vs
+/BitDemo/Debug
+/BitDemo/x64/Debug
+/BitDemo/BitDemo/Debug
+/BitDemo/BitDemo/x64/Debug
