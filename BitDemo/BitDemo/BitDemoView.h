@@ -10,6 +10,10 @@ class CBitDemoView : public CView
 protected: // create from serialization only
 	CBitDemoView() noexcept;
 	DECLARE_DYNCREATE(CBitDemoView)
+	CBitmap m_Bitmap;
+	int m_BitmapHeight;
+	int m_BitmapWidth;
+
 
 // Attributes
 public:

@@ -211,6 +211,8 @@
     <None Include="res\BitDemo.rc2" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="..\..\YRGU.bmp" />
+    <Image Include="..\..\YRGU2.bmp" />
     <Image Include="res\BitDemo.ico" />
     <Image Include="res\BitDemoDoc.ico" />
   </ItemGroup>

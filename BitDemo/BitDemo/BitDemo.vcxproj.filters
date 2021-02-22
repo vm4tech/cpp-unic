@@ -74,5 +74,11 @@
     <Image Include="res\BitDemo.ico">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="..\..\YRGU.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\YRGU2.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

@@ -30,7 +30,11 @@ END_MESSAGE_MAP()
 CBitDemoView::CBitDemoView() noexcept
 {
 	// TODO: add construction code here
-
+	BITMAP BM;
+	m_Bitmap.LoadBitmap(IDB_BITMAP1);
+	m_Bitmap.GetObject(sizeof(BM), &BM);
+	m_BitmapWidth = BM.bmWidth;
+	m_BitmapHeight = BM.bmHeight;
 }
 
 CBitDemoView::~CBitDemoView()
@@ -47,7 +51,7 @@ BOOL CBitDemoView::PreCreateWindow(CREATESTRUCT& cs)
 
 // CBitDemoView drawing
 
-void CBitDemoView::OnDraw(CDC* /*pDC*/)
+void CBitDemoView::OnDraw(CDC* pDC)
 {
 	CBitDemoDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
@@ -55,6 +59,24 @@ void CBitDemoView::OnDraw(CDC* /*pDC*/)
 		return;
 
 	// TODO: add draw code for native data here
+	CDC MemDC;
+	RECT ClientRect;
+	// Создадим объект памяти КУ и выберем объект изображения 
+	MemDC.CreateCompatibleDC(NULL);
+	MemDC.SelectObject(&m_Bitmap);
+	// Получим размеры окна представления 
+	GetClientRect(&ClientRect);
+	// Отобразим рисунок с растяжением или сжатием 
+	pDC->StretchBlt
+	(0, 0,              // верхний левый угол приемника
+		ClientRect.right,  // ширина прямоугольника приемника
+		ClientRect.bottom, // высота прямоугольника приемника
+		&MemDC,            // объект КУ источника
+		0, 0,              // верхний левый угол источника
+		m_BitmapWidth,     // ширина прямоугольника источника
+		m_BitmapHeight,    // высота прямоугольника источника
+		SRCCOPY);          // код растровой операции
+
 }
 
 
