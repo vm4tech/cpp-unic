@@ -1,0 +1,7 @@
+#UsingDLL project ignore
+
+/UsingDLL/.vs
+/UsingDLL/Debug
+/UsingDLL/x64/Debug
+/UsingDLL/UsingDLL/Debug
+/UsingDLL/UsingDLL/x64/Debug
