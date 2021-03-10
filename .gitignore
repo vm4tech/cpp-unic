@@ -1,0 +1,7 @@
+#MiniDraw project ignore
+
+/MiniDraw/.vs
+/MiniDraw/Debug
+/MiniDraw/x64/Debug
+/MiniDraw/MiniDraw/Debug
+/MiniDraw/MiniDraw/x64/Debug
