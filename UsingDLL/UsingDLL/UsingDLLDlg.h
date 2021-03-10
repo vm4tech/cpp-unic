@@ -4,6 +4,8 @@
 
 #pragma once
 
+extern "C" __declspec(dllimport)
+double ExampleSquareRoot(double d);
 
 // CUsingDLLDlg dialog
 class CUsingDLLDlg : public CDialogEx
@@ -30,4 +32,8 @@ protected:
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
+public:
+	double m_dInput;
+	double m_dOutput;
+	afx_msg void OnClickedCompute();
 };

@@ -19,6 +19,8 @@
 
 CUsingDLLDlg::CUsingDLLDlg(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_USINGDLL_DIALOG, pParent)
+	, m_dInput(0)
+	, m_dOutput(0)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -26,11 +28,14 @@ CUsingDLLDlg::CUsingDLLDlg(CWnd* pParent /*=nullptr*/)
 void CUsingDLLDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
+	DDX_Text(pDX, IDC_INPUT, m_dInput);
+	DDX_Text(pDX, IDC_OUTPUT, m_dOutput);
 }
 
 BEGIN_MESSAGE_MAP(CUsingDLLDlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	ON_BN_CLICKED(IDC_COMPUTE, &CUsingDLLDlg::OnClickedCompute)
 END_MESSAGE_MAP()
 
 
@@ -86,3 +91,13 @@ HCURSOR CUsingDLLDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+
+
+void CUsingDLLDlg::OnClickedCompute()
+{
+	// TODO: Add your control notification handler code here
+	UpdateData(TRUE); 	// Получить данные из диалогового окна
+	m_dOutput = ExampleSquareRoot(m_dInput);
+	UpdateData(FALSE);	// Обновить данные в диалоговом окне 
+
+}
