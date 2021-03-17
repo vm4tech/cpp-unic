@@ -16,6 +16,7 @@
 
 class CMandelMTApp : public CWinApp
 {
+
 public:
 	CMandelMTApp() noexcept;
 

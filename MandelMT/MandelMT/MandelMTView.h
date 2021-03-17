@@ -14,6 +14,8 @@ protected: // create from serialization only
 // Attributes
 public:
 	CMandelMTDoc* GetDocument() const;
+	CWinThread* m_PDrawThread;
+
 
 // Operations
 public:
@@ -37,6 +39,8 @@ protected:
 // Generated message map functions
 protected:
 	DECLARE_MESSAGE_MAP()
+public:
+	afx_msg void OnSize(UINT nType, int cx, int cy);
 };
 
 #ifndef _DEBUG  // debug version in MandelMTView.cpp

@@ -7,6 +7,9 @@
 #include "MandelMT.h"
 
 #include "MainFrm.h"
+#include "MandelMTDoc.h"
+#include "MandelMTView.h"
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -17,6 +20,7 @@
 IMPLEMENT_DYNCREATE(CMainFrame, CFrameWnd)
 
 BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
+	ON_WM_SYSCOMMAND()
 END_MESSAGE_MAP()
 
 // CMainFrame construction/destruction
@@ -57,3 +61,19 @@ void CMainFrame::Dump(CDumpContext& dc) const
 
 // CMainFrame message handlers
 
+
+
+void CMainFrame::OnSysCommand(UINT nID, LPARAM lParam)
+{
+	// TODO: Add your message handler code here and/or call default
+	CWinThread* PDrawThread =
+		((CMandelMTView*)GetActiveView())->m_PDrawThread;
+
+	if (PDrawThread)
+		PDrawThread->SuspendThread();
+
+	CFrameWnd::OnSysCommand(nID, lParam);
+	if (PDrawThread && PDrawThread->m_hThread != NULL)
+		PDrawThread->ResumeThread();
+
+}
