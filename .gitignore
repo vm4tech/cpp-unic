@@ -1,0 +1,8 @@
+#MandelMT project ignore
+
+/MandelMT/.vs
+/MandelMT/Debug
+/MandelMT/x64/Debug
+/MandelMT/MandelMT/Debug
+/MandelMT/MandelMT/x64/Debug
+/MandelMT/SRdll/Debug
