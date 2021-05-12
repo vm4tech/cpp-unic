@@ -4,9 +4,9 @@ TCP/Client/Client/x64
 TCP/Server/x64
 TCP/Server/.vs
 TCP/Server/Server/x64
-UDP/Client/.vs
-UDP/Client/x64
-UDP/Client/Client/x64
-UDP/Server/x64
-UDP/Server/.vs
-UDP/Server/Server/x64
+UDP/Receiver/.vs
+UDP/Receiver/x64
+UDP/Receiver/Receiver/x64
+UDP/Sender/x64
+UDP/Sender/.vs
+UDP/Sender/Sender/x64
