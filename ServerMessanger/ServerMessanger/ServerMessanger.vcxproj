@@ -20,9 +20,9 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
-    <ProjectGuid>{5AD61AD4-0D50-41E2-A728-398AFFEE6184}</ProjectGuid>
+    <ProjectGuid>{28A29F84-E0A1-4286-B8B2-8D6BF7EED9DB}</ProjectGuid>
     <Keyword>MFCProj</Keyword>
-    <RootNamespace>ClientMessanger</RootNamespace>
+    <RootNamespace>ServerMessanger</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -91,7 +91,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;_WINSOCK_DEPRECATED_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
@@ -184,31 +184,31 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="ClientMessanger.h" />
-    <ClInclude Include="ClientMessangerDlg.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="ServerMessanger.h" />
+    <ClInclude Include="ServerMessangerDlg.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ClientMessanger.cpp" />
-    <ClCompile Include="ClientMessangerDlg.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="ServerMessanger.cpp" />
+    <ClCompile Include="ServerMessangerDlg.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="ClientMessanger.rc" />
+    <ResourceCompile Include="ServerMessanger.rc" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="res\ClientMessanger.rc2" />
+    <None Include="res\ServerMessanger.rc2" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="res\ClientMessanger.ico" />
+    <Image Include="res\ServerMessanger.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
