@@ -427,6 +427,7 @@ UINT ListenThread(PVOID lpParam)
 						Str[l] = 0;
 						pLB->AddString(Str);
 					}
+
 				}
 			}
 
@@ -434,41 +435,49 @@ UINT ListenThread(PVOID lpParam)
 
 			if (SocketInfo->BytesRECV > SocketInfo->BytesSEND)
 			{
-				SocketInfo->DataBuf.buf =
-					SocketInfo->Buffer + SocketInfo->BytesSEND;
+				char sockets[1024];
+				sprintf_s(sockets, sizeof(sockets), "users = %d", SocketArray[1]->Socket);
+				for (int i = 2; i < sizeof(SocketArray); i++) {
+					if (SocketArray[i] == NULL)
+						break;
+					sprintf_s(sockets, sizeof(sockets), "%s&%d", sockets, SocketArray[i]->Socket);
+				}
+				/*SocketInfo->DataBuf.buf =
+					SocketInfo->Buffer + SocketInfo->BytesSEND;*/
+				SocketInfo->DataBuf.buf = sockets;
 				SocketInfo->DataBuf.len =
 					SocketInfo->BytesRECV - SocketInfo->BytesSEND;
-
-				if (WSASend(SocketInfo->Socket,
-					&(SocketInfo->DataBuf), 1,
-					&SendBytes, 0, NULL, NULL) ==
-					SOCKET_ERROR)
-				{
-					if (WSAGetLastError() != WSAEWOULDBLOCK)
+				for (int i = 1; i < sizeof(SocketArray); i++) {
+					if (SocketArray[i] == NULL)
+						break;
+					if (WSASend(SocketArray[i]->Socket,
+						&(SocketInfo->DataBuf), 1,
+						&SendBytes, 0, NULL, NULL) ==
+						SOCKET_ERROR)
 					{
-						sprintf_s(Str, sizeof(Str),
-							"WSASend() failed with "
-							"error %d", WSAGetLastError());
-						pLB->AddString(Str);
-						FreeSocketInformation(
-							Event - WSA_WAIT_EVENT_0, Str, pLB);
-						return 1;
-					}
+						if (WSAGetLastError() != WSAEWOULDBLOCK)
+						{
+							sprintf_s(Str, sizeof(Str),
+								"WSASend() failed with "
+								"error %d", WSAGetLastError());
+							pLB->AddString(Str);
+							FreeSocketInformation(
+								Event - WSA_WAIT_EVENT_0, Str, pLB);
+							return 1;
+						}
 
-					// Произошла ошибка WSAEWOULDBLOCK. 
-					// Событие FD_WRITE будет отправлено, когда
-					// в буфере будет больше свободного места
+						// Произошла ошибка WSAEWOULDBLOCK. 
+						// Событие FD_WRITE будет отправлено, когда
+						// в буфере будет больше свободного места
+					}
 				}
-				else
-				{
-					SocketInfo->BytesSEND += SendBytes;
+				SocketInfo->BytesSEND += SendBytes;
 
-					if (SocketInfo->BytesSEND ==
-						SocketInfo->BytesRECV)
-					{
-						SocketInfo->BytesSEND = 0;
-						SocketInfo->BytesRECV = 0;
-					}
+				if (SocketInfo->BytesSEND ==
+					SocketInfo->BytesRECV)
+				{
+					SocketInfo->BytesSEND = 0;
+					SocketInfo->BytesRECV = 0;
 				}
 			}
 		}

@@ -1,6 +1,15 @@
 
 // ClientMessangerDlg.cpp : implementation file
 //
+/*
+* TODO: 
+* 1. Сделать парсинг req/res
+* 2. Сделать вывод пользовтелей
+* 3. Сделать отправку сообщений
+* 4. Отправку сообщений всем
+* 5. Сохранение диалогов
+* 6. fix костылей
+*/
 
 #include "pch.h"
 #include "framework.h"
@@ -13,7 +22,7 @@
 #define DEFAULT_COUNT	1
 #define DEFAULT_PORT	5150
 #define DEFAULT_BUFFER	2048
-#define DEFAULT_MESSAGE	"This is a test message"
+#define DEFAULT_MESSAGE	"Hey bro!"
 
 UINT Recv(LPVOID pParam);
 SOCKET m_sClient;
@@ -102,7 +111,7 @@ HCURSOR CClientMessangerDlg::OnQueryDragIcon()
 void CClientMessangerDlg::SetConnected(bool IsConnected)
 {
 	m_IsConnected = IsConnected;
-
+	GetDlgItem(IDC_USER)->EnableWindow(IsConnected);
 	GetDlgItem(IDC_SEND)->EnableWindow(IsConnected);
 	GetDlgItem(IDC_MESSAGE)->EnableWindow(IsConnected);
 	GetDlgItem(IDC_CONNECT)->EnableWindow(!IsConnected);
@@ -123,7 +132,11 @@ void CClientMessangerDlg::OnBnClickedConnect()
 	char Str[256];
 
 	/*GetDlgItem(IDC_SERVER)->GetWindowText(szServer, sizeof(szServer));
-	GetDlgItem(IDC_PORT)->GetWindowText(Str, sizeof(Str));*/
+	GetDlgItem(IDC_PORT)->GetWindowText(Str, sizeof(Str));
+	iPort = atoi(Str);*/
+	//https://github.com/MaseDar/cpp-unic/commit/5158d89cfb96541d3939562612b3e59ebf24f944
+
+	//TODO: Потом сделать, чтобы не только на локалке было (ну это не трудно)
 	strcpy(szServer, "localhost");
 	iPort = DEFAULT_PORT;
 	if (iPort <= 0 || iPort >= 0x10000)
@@ -167,6 +180,10 @@ void CClientMessangerDlg::OnBnClickedConnect()
 		return;
 	}
 	SetConnected(true);
+	// 
+	sprintf_s(Str, sizeof(Str), "con=%d", m_sClient);
+	// Отправляем приветственное сообщение, чтобы у всех пользоваетелей обновился список "активных пользователей"
+	send(m_sClient, Str, strlen(Str), 0);
 	// Запускает поток на прослушивание сокета на сервере
 	AfxBeginThread(Recv, NULL);
 }
@@ -229,13 +246,5 @@ void CClientMessangerDlg::OnBnClickedSend()
 
 	sprintf_s(Str, sizeof(Str), "Send %d bytes\n", ret);
 	m_ListBox.AddString((LPTSTR)Str);
-		
-	//
 
-	
-	/*closesocket(m_sClient);
-
-	WSACleanup();
-
-	SetConnected(false);*/
 }
