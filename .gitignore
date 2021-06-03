@@ -1,0 +1,11 @@
+ClientMessanger/x64
+ClientMessanger/.vs
+ClientMessanger/Debug
+ClientMessanger/ClientMessanger/Debug
+ClientMessanger/ClientMessanger/x64
+
+ServerMessanger/x64
+ServerMessanger/.vs
+ServerMessanger/Debug
+ServerMessanger/ServerMessanger/Debug
+ServerMessanger/ServerMessanger/x64
