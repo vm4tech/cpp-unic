@@ -33,10 +33,9 @@ protected:
 
 public:
 	bool	m_IsConnected;
-	SOCKET	m_sClient;
+	/*static SOCKET	m_sClient;*/
 	void	SetConnected(bool IsConnected);
-
-	CListBox m_ListBox;
+	/*CListBox m_ListBox;*/
 	CButton m_NoEcho;
 	int m_Number;
 	afx_msg void OnBnClickedConnect();

@@ -10,16 +10,19 @@
 
 #include <winsock2.h>
 
-#define DEFAULT_COUNT	10
+#define DEFAULT_COUNT	1
 #define DEFAULT_PORT	5150
 #define DEFAULT_BUFFER	2048
 #define DEFAULT_MESSAGE	"This is a test message"
 
+UINT Recv(LPVOID pParam);
+SOCKET m_sClient;
+CListBox m_ListBox;
 // CClientMessangerDlg dialog
 
 CClientMessangerDlg::CClientMessangerDlg(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_CLIENTMESSANGER_DIALOG, pParent)
-	, m_Number(0)
+	, m_Number(DEFAULT_COUNT)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -28,8 +31,6 @@ void CClientMessangerDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_LISTBOX, m_ListBox);
-	DDX_Control(pDX, IDC_NO_ECHO, m_NoEcho);
-	DDX_Text(pDX, IDC_NUMBER, m_Number);
 }
 
 BEGIN_MESSAGE_MAP(CClientMessangerDlg, CDialogEx)
@@ -54,17 +55,13 @@ BOOL CClientMessangerDlg::OnInitDialog()
 	// TODO: Add extra initialization here
 	char Str[128];
 
-	GetDlgItem(IDC_SERVER)->SetWindowText("localhost");
-	sprintf_s(Str, sizeof(Str), "%d", DEFAULT_COUNT);
-	GetDlgItem(IDC_NUMBER)->SetWindowText(Str);
-	sprintf_s(Str, sizeof(Str), "%d", DEFAULT_PORT);
-	GetDlgItem(IDC_PORT)->SetWindowText(Str);
+
 	GetDlgItem(IDC_MESSAGE)->SetWindowText(DEFAULT_MESSAGE);
-	m_NoEcho.SetCheck(0);
 	SetConnected(false);
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
+
 
 // If you add a minimize button to your dialog, you will need the code below
 //  to draw the icon.  For MFC applications using the document/view model,
@@ -108,10 +105,6 @@ void CClientMessangerDlg::SetConnected(bool IsConnected)
 
 	GetDlgItem(IDC_SEND)->EnableWindow(IsConnected);
 	GetDlgItem(IDC_MESSAGE)->EnableWindow(IsConnected);
-	GetDlgItem(IDC_NUMBER)->EnableWindow(IsConnected);
-	GetDlgItem(IDC_NO_ECHO)->EnableWindow(IsConnected);
-	GetDlgItem(IDC_SERVER)->EnableWindow(!IsConnected);
-	GetDlgItem(IDC_PORT)->EnableWindow(!IsConnected);
 	GetDlgItem(IDC_CONNECT)->EnableWindow(!IsConnected);
 }
 
@@ -129,9 +122,10 @@ void CClientMessangerDlg::OnBnClickedConnect()
 
 	char Str[256];
 
-	GetDlgItem(IDC_SERVER)->GetWindowText(szServer, sizeof(szServer));
-	GetDlgItem(IDC_PORT)->GetWindowText(Str, sizeof(Str));
-	iPort = atoi(Str);
+	/*GetDlgItem(IDC_SERVER)->GetWindowText(szServer, sizeof(szServer));
+	GetDlgItem(IDC_PORT)->GetWindowText(Str, sizeof(Str));*/
+	strcpy(szServer, "localhost");
+	iPort = DEFAULT_PORT;
 	if (iPort <= 0 || iPort >= 0x10000)
 	{
 		m_ListBox.AddString((LPTSTR)"Port number incorrect");
@@ -173,8 +167,32 @@ void CClientMessangerDlg::OnBnClickedConnect()
 		return;
 	}
 	SetConnected(true);
+	// Запускает поток на прослушивание сокета на сервере
+	AfxBeginThread(Recv, NULL);
 }
 
+UINT Recv(LPVOID pParam) {
+	char	szBuffer[DEFAULT_BUFFER];
+	int ret;
+	
+	char	Str[256];
+
+	for (;;) {
+		ret = recv(m_sClient, szBuffer, DEFAULT_BUFFER, 0);
+		if (ret == 0)
+			continue;
+		else if (ret == SOCKET_ERROR)
+		{
+			sprintf_s(Str, sizeof(Str), "send() failed: %d", WSAGetLastError());
+			m_ListBox.AddString((LPTSTR)Str);
+			break;
+		}
+		szBuffer[ret] = '\0';
+		sprintf_s(Str, sizeof(Str), "response from server: %s", szBuffer);
+		m_ListBox.AddString((LPTSTR)Str);
+	}
+	return 0;
+}
 
 void CClientMessangerDlg::OnBnClickedSend()
 {
@@ -196,46 +214,28 @@ void CClientMessangerDlg::OnBnClickedSend()
 	}
 
 	GetDlgItem(IDC_MESSAGE)->GetWindowText(szMessage, sizeof(szMessage));
-	if (m_NoEcho.GetCheck() == 1)
-		bSendOnly = TRUE;
 
-	// Отправка и прием данных 
-	//
-	for (i = 0; i < m_Number; i++)
+	// Отправка данных
+	 
+	sprintf_s(Str, sizeof(Str), "mes=%s&%d&%d", CString(szMessage),m_sClient,1234);
+	
+	ret = send(m_sClient, Str, strlen(Str), 0);
+	m_ListBox.AddString((LPTSTR)Str);
+	if (ret == SOCKET_ERROR)
 	{
-		ret = send(m_sClient, szMessage, strlen(szMessage), 0);
-
-		if (ret == 0)
-			break;
-		else if (ret == SOCKET_ERROR)
-		{
-			sprintf_s(Str, sizeof(Str), "send() failed: %d", WSAGetLastError());
-			m_ListBox.AddString((LPTSTR)Str);
-			break;
-		}
-
-		sprintf_s(Str, sizeof(Str), "Send %d bytes\n", ret);
+		sprintf_s(Str, sizeof(Str), "send() failed: %d", WSAGetLastError());
 		m_ListBox.AddString((LPTSTR)Str);
-
-		if (!bSendOnly)
-		{
-			ret = recv(m_sClient, szBuffer, DEFAULT_BUFFER, 0);
-			if (ret == 0)	// Корректное завершение
-				break;
-			else if (ret == SOCKET_ERROR)
-			{
-				sprintf_s(Str, sizeof(Str), "recv() failed: %d", WSAGetLastError());
-				m_ListBox.AddString((LPTSTR)Str);
-				break;
-			}
-			szBuffer[ret] = '\0';
-			sprintf_s(Str, sizeof(Str), "RECV [%d bytes]: '%s'", ret, szBuffer);
-			m_ListBox.AddString((LPTSTR)Str);
-		}
 	}
-	closesocket(m_sClient);
+
+	sprintf_s(Str, sizeof(Str), "Send %d bytes\n", ret);
+	m_ListBox.AddString((LPTSTR)Str);
+		
+	//
+
+	
+	/*closesocket(m_sClient);
 
 	WSACleanup();
 
-	SetConnected(false);
+	SetConnected(false);*/
 }
