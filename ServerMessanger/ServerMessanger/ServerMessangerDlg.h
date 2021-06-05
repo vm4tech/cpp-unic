@@ -35,4 +35,7 @@ public:
 	afx_msg void OnBnClickedPrint();
 	CListBox m_ListBox;
 	afx_msg void OnBnClickedStart();
+	char** getParserMessage();
+	void sendMessage(char* message, SOCKET from, char* to);
+	void sendUsers();
 };

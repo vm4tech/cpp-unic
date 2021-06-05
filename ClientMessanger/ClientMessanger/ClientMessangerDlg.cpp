@@ -27,7 +27,15 @@
 UINT Recv(LPVOID pParam);
 SOCKET m_sClient;
 CListBox m_ListBox;
+CListBox m_Users;
 // CClientMessangerDlg dialog
+// «адумка на сохранение диалогов
+struct ChatUser {
+	char friendSocket[6];
+	CListBox currentChat;
+}ChatUser;
+// номер друга
+char friendSocket[6];
 
 CClientMessangerDlg::CClientMessangerDlg(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_CLIENTMESSANGER_DIALOG, pParent)
@@ -40,6 +48,7 @@ void CClientMessangerDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_LISTBOX, m_ListBox);
+	DDX_Control(pDX, IDC_USERS, m_Users);
 }
 
 BEGIN_MESSAGE_MAP(CClientMessangerDlg, CDialogEx)
@@ -47,6 +56,7 @@ BEGIN_MESSAGE_MAP(CClientMessangerDlg, CDialogEx)
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDC_CONNECT, &CClientMessangerDlg::OnBnClickedConnect)
 	ON_BN_CLICKED(IDC_SEND, &CClientMessangerDlg::OnBnClickedSend)
+	ON_BN_CLICKED(IDC_USER, &CClientMessangerDlg::OnBnClickedUser)
 END_MESSAGE_MAP()
 
 
@@ -67,6 +77,7 @@ BOOL CClientMessangerDlg::OnInitDialog()
 
 	GetDlgItem(IDC_MESSAGE)->SetWindowText(DEFAULT_MESSAGE);
 	SetConnected(false);
+	GetDlgItem(IDC_SEND)->EnableWindow(false);
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -112,7 +123,6 @@ void CClientMessangerDlg::SetConnected(bool IsConnected)
 {
 	m_IsConnected = IsConnected;
 	GetDlgItem(IDC_USER)->EnableWindow(IsConnected);
-	GetDlgItem(IDC_SEND)->EnableWindow(IsConnected);
 	GetDlgItem(IDC_MESSAGE)->EnableWindow(IsConnected);
 	GetDlgItem(IDC_CONNECT)->EnableWindow(!IsConnected);
 }
@@ -181,17 +191,43 @@ void CClientMessangerDlg::OnBnClickedConnect()
 	}
 	SetConnected(true);
 	// 
-	sprintf_s(Str, sizeof(Str), "con=%d", m_sClient);
+	sprintf_s(Str, sizeof(Str), "connect=%d", m_sClient);
 	// ќтправл€ем приветственное сообщение, чтобы у всех пользоваетелей обновилс€ список "активных пользователей"
 	send(m_sClient, Str, strlen(Str), 0);
 	// «апускает поток на прослушивание сокета на сервере
 	AfxBeginThread(Recv, NULL);
 }
 
+char** getParserMessage(char* buf) {
+	char* params[2];
+	char* parsed[10], * temp;
+
+	temp = strtok(buf, "=");
+	int i = 0;
+	while (temp != NULL)
+	{
+		parsed[i] = temp;
+		parsed[i+1] = 0;
+		params[i++] = temp;
+		temp = strtok(NULL, "=");
+	}
+
+	temp = strtok(params[1], "&");
+	i--;
+	while (temp != NULL)
+	{
+		parsed[i++] = temp;
+		temp = strtok(NULL, "&");
+	}
+	parsed[i] = '\0';
+
+	return parsed;
+}
+
 UINT Recv(LPVOID pParam) {
 	char	szBuffer[DEFAULT_BUFFER];
 	int ret;
-	
+	char** parsedMess;
 	char	Str[256];
 
 	for (;;) {
@@ -205,8 +241,48 @@ UINT Recv(LPVOID pParam) {
 			break;
 		}
 		szBuffer[ret] = '\0';
-		sprintf_s(Str, sizeof(Str), "response from server: %s", szBuffer);
-		m_ListBox.AddString((LPTSTR)Str);
+		parsedMess = getParserMessage(szBuffer);
+		char user[256][6];
+		// выводим в m_Users список пользователей (только мы делаем ручное копирование, т.к. по-другому почему-то все портитс€... —корее всего, из-за того, что указатели перезаписываютс€, и что-то не отрабатывает)
+		if (strcmp(parsedMess[0], "users") == 0) {
+			
+			for (int i = 1;; i++) {
+				if (parsedMess[i] != NULL) {
+					for (int j = 0; j < 6; j++) {
+						if (parsedMess[i][j] != '\0')
+							user[i-1][j] = parsedMess[i][j];
+						else {
+							user[i-1][j] = '\0';
+							break;
+						}
+					}
+
+				}
+				else {
+					user[i-1][0] = '\0';
+					break;
+				}
+			}
+			// ƒобавл€ем пользовтелей именно здесь
+			m_Users.ResetContent();
+			for (int i = 0; i < 256; i++) {
+				if (user[i][0] != '\0')
+					m_Users.AddString(user[i]);
+				else
+					break;
+			}
+
+			/*for (int i = 1; i < sizeof(parsedMess); i++) {
+				strcpy(Str, parsedMess[i]);
+				m_Users.AddString(Str);
+			}*/
+		}
+		else if (strcmp(parsedMess[0], "message") == 0){
+			sprintf_s(Str, sizeof(Str), "friend: %s", CString(parsedMess[1]));
+			m_ListBox.AddString(Str);
+		}
+		/*sprintf_s(Str, sizeof(Str), "response from server: %s", szBuffer);*/
+	/*	m_ListBox.AddString((LPTSTR)Str);*/
 	}
 	return 0;
 }
@@ -215,11 +291,8 @@ void CClientMessangerDlg::OnBnClickedSend()
 {
 	// TODO: Add your control notification handler code here
 	char	szMessage[1024];		// —ообщение дл€ отправки
-	BOOL	bSendOnly = FALSE;	// “олько отправка данных
-
 	char	szBuffer[DEFAULT_BUFFER];
-	int		ret,
-		i;
+	int		ret, i;
 
 	char	Str[256];
 
@@ -233,18 +306,36 @@ void CClientMessangerDlg::OnBnClickedSend()
 	GetDlgItem(IDC_MESSAGE)->GetWindowText(szMessage, sizeof(szMessage));
 
 	// ќтправка данных
-	 
-	sprintf_s(Str, sizeof(Str), "mes=%s&%d&%d", CString(szMessage),m_sClient,1234);
+	
+	sprintf_s(Str, sizeof(Str), "message=%s&%d&%s", CString(szMessage), m_sClient, friendSocket);
 	
 	ret = send(m_sClient, Str, strlen(Str), 0);
-	m_ListBox.AddString((LPTSTR)Str);
+	sprintf_s(Str, sizeof(Str), "You:%s", CString(szMessage));
+	m_ListBox.AddString(Str);
 	if (ret == SOCKET_ERROR)
 	{
 		sprintf_s(Str, sizeof(Str), "send() failed: %d", WSAGetLastError());
 		m_ListBox.AddString((LPTSTR)Str);
 	}
 
-	sprintf_s(Str, sizeof(Str), "Send %d bytes\n", ret);
-	m_ListBox.AddString((LPTSTR)Str);
+	/*sprintf_s(Str, sizeof(Str), "Send %d bytes\n", ret);
+	m_ListBox.AddString((LPTSTR)Str);*/
+
+}
+
+void CClientMessangerDlg::OnBnClickedUser()
+{
+	// TODO: Add your control notification handler code here
+	GetDlgItem(IDC_SEND)->EnableWindow(true);
+	int index;
+	CString strText;
+	char help[6];
+	index = m_Users.GetCurSel();
+	m_Users.GetText(index, help);
+	m_ListBox.ResetContent();
+	//sprintf_s(Str, sizeof(Str), "„ат с пользователем: %s", friendSocket);
+	//  опируем значение, т.к. GetText копирует значение в буфер
+	strcpy(friendSocket, help);
+	m_ListBox.AddString(friendSocket);
 
 }

@@ -18,6 +18,7 @@
 
 int  iPort = PORT; 	 // Порт для прослушивания подключений
 bool bPrint = false; // Выводить ли сообщения клиентов
+CListBox m_ListBox;
 typedef struct _SOCKET_INFORMATION {
 	CHAR Buffer[DATA_BUFSIZE];
 	WSABUF DataBuf;
@@ -34,10 +35,12 @@ void FreeSocketInformation(DWORD Event, char* Str,
 DWORD EventTotal = 0;
 WSAEVENT EventArray[WSA_MAXIMUM_WAIT_EVENTS];
 LPSOCKET_INFORMATION SocketArray[WSA_MAXIMUM_WAIT_EVENTS];
-
+DWORD RecvBytes;
+DWORD SendBytes;
 HWND   hWnd_LB;  // Для вывода в других потоках
 
 UINT ListenThread(PVOID lpParam);
+char** parsedMess;
 
 // CAboutDlg dialog used for App About
 
@@ -221,6 +224,111 @@ void CServerMessangerDlg::OnBnClickedStart()
 	GetDlgItem(IDC_START)->EnableWindow(false);
 
 }
+
+char** getParserMessage(char* buf) {
+	char* params[2];
+	char* parsed[10], * temp;
+
+	temp = strtok(buf, "=");
+	int i = 0;
+	while (temp != NULL)
+	{
+		parsed[i] = temp;
+		parsed[i + 1] = 0;
+		params[i++] = temp;
+		temp = strtok(NULL, "=");
+	}
+
+	temp = strtok(params[1], "&");
+	i--;
+	while (temp != NULL)
+	{
+		parsed[i++] = temp;
+		temp = strtok(NULL, "&");
+	}
+	parsed[i] = '\0';
+	return parsed;
+}
+void sendMessage(char* message, SOCKET from, char* to) {
+	char postMessage[1024];
+	char Str[1024];
+	//char to2[1024];
+	LPSOCKET_INFORMATION SocketInfo = 0;
+	for (int i = 0; i < sizeof(SocketArray); i++) {
+		if (SocketArray[i] != NULL) {
+
+			sprintf_s(Str, sizeof(Str), "%d", SocketArray[i]->Socket);
+			//// TODO: Только дял теста отправляю сеье
+			//sprintf_s(to2, sizeof(to2), "%d", from);
+			if (strcmp(Str, to) == 0) {
+				SocketInfo = SocketArray[i];
+				sprintf_s(postMessage, sizeof(postMessage), "message=%s&%d", message, from);
+			}
+
+		}
+		else
+			break;
+		
+	}
+	SocketInfo->DataBuf.buf = postMessage;
+	SocketInfo->DataBuf.len = sizeof(postMessage);
+
+	if (WSASend(SocketInfo->Socket,
+		&(SocketInfo->DataBuf), 1,
+		&SendBytes, 0, NULL, NULL) ==
+		SOCKET_ERROR)
+	{
+		SocketInfo->BytesSEND += SendBytes;
+	}
+	SocketInfo->BytesSEND = 0;
+	SocketInfo->BytesRECV = 0;
+
+}
+
+void sendUsers() {
+	char users[1024];
+	char Str[1024];
+	char to2[1024];
+	int size = 0;
+	LPSOCKET_INFORMATION SocketInfo = SocketArray[0];
+	if (SocketArray[1] == NULL)
+		return;
+	sprintf_s(users, sizeof(users), "users=%d", SocketArray[1]->Socket);
+	for (int i = 2; i < sizeof(SocketArray); i++) {
+		if (SocketArray[i] == NULL)
+			break;
+		sprintf_s(users, sizeof(users), "%s&%d", users, SocketArray[i]->Socket);
+	}
+	for (int i = 0; i < sizeof(users); i++) {
+		if (users[i] != '\0')
+			size++;
+		else
+			break;
+	}
+	SocketInfo->DataBuf.buf = users;
+	SocketInfo->DataBuf.len = size+1;
+	for (int i = 1; i < sizeof(SocketArray); i++) {
+		if (SocketArray[i] == NULL)
+			break;
+		if (WSASend(SocketArray[i]->Socket,
+			&(SocketInfo->DataBuf), 1,
+			&SendBytes, 0, NULL, NULL) ==
+			SOCKET_ERROR)
+		{
+			if (WSAGetLastError() != WSAEWOULDBLOCK)
+			{
+				SocketInfo->BytesSEND = 0;
+				SocketInfo->BytesRECV = 0;
+			}
+
+			// Произошла ошибка WSAEWOULDBLOCK. 
+			// Событие FD_WRITE будет отправлено, когда
+			// в буфере будет больше свободного места
+		}
+	}
+	SocketInfo->BytesSEND = 0;
+	SocketInfo->BytesRECV = 0;
+}
 UINT ListenThread(PVOID lpParam)
 {
 	SOCKET Listen;
@@ -231,8 +339,7 @@ UINT ListenThread(PVOID lpParam)
 	WSADATA wsaData;
 	DWORD Ret;
 	DWORD Flags;
-	DWORD RecvBytes;
-	DWORD SendBytes;
+	
 	char  Str[200];
 	CListBox* pLB =
 		(CListBox*)(CListBox::FromHandle(hWnd_LB));
@@ -417,6 +524,28 @@ UINT ListenThread(PVOID lpParam)
 				}
 				else
 				{
+					/* get: Парсер сообщений, шаблон:
+					* param=...
+					* message=asdlasdkals;ld&3213&13821
+					* Параметры (param):
+					* connect - first connect user (con=socket_user)
+					* message - сообщение (mes=message&from&to)
+					* all - масовая рассылка (all=message&from)
+					* 
+					*/
+
+					parsedMess = getParserMessage(SocketInfo->Buffer);
+					// Можно потом все сообщения перевести в константы
+					if (strcmp(parsedMess[0], "message") == 0) {
+						sendMessage(parsedMess[1], SocketInfo->Socket, parsedMess[3]);
+					}
+					else if (strcmp(parsedMess[0], "connect") == 0) {
+						sendUsers();
+					}
+					else if (strcmp(parsedMess[0], "all") == 0) {
+						SocketInfo->BytesRECV = RecvBytes;
+					}
+
 					SocketInfo->BytesRECV = RecvBytes;
 					// Вывод сообщения, если требуется
 					if (bPrint)
@@ -427,59 +556,61 @@ UINT ListenThread(PVOID lpParam)
 						Str[l] = 0;
 						pLB->AddString(Str);
 					}
-
-				}
-			}
-
-			// Отправка данных, если это возможно
-
-			if (SocketInfo->BytesRECV > SocketInfo->BytesSEND)
-			{
-				char sockets[1024];
-				sprintf_s(sockets, sizeof(sockets), "users = %d", SocketArray[1]->Socket);
-				for (int i = 2; i < sizeof(SocketArray); i++) {
-					if (SocketArray[i] == NULL)
-						break;
-					sprintf_s(sockets, sizeof(sockets), "%s&%d", sockets, SocketArray[i]->Socket);
-				}
-				/*SocketInfo->DataBuf.buf =
-					SocketInfo->Buffer + SocketInfo->BytesSEND;*/
-				SocketInfo->DataBuf.buf = sockets;
-				SocketInfo->DataBuf.len =
-					SocketInfo->BytesRECV - SocketInfo->BytesSEND;
-				for (int i = 1; i < sizeof(SocketArray); i++) {
-					if (SocketArray[i] == NULL)
-						break;
-					if (WSASend(SocketArray[i]->Socket,
-						&(SocketInfo->DataBuf), 1,
-						&SendBytes, 0, NULL, NULL) ==
-						SOCKET_ERROR)
-					{
-						if (WSAGetLastError() != WSAEWOULDBLOCK)
-						{
-							sprintf_s(Str, sizeof(Str),
-								"WSASend() failed with "
-								"error %d", WSAGetLastError());
-							pLB->AddString(Str);
-							FreeSocketInformation(
-								Event - WSA_WAIT_EVENT_0, Str, pLB);
-							return 1;
-						}
-
-						// Произошла ошибка WSAEWOULDBLOCK. 
-						// Событие FD_WRITE будет отправлено, когда
-						// в буфере будет больше свободного места
-					}
-				}
-				SocketInfo->BytesSEND += SendBytes;
-
-				if (SocketInfo->BytesSEND ==
-					SocketInfo->BytesRECV)
-				{
 					SocketInfo->BytesSEND = 0;
 					SocketInfo->BytesRECV = 0;
 				}
 			}
+			else {
+			}
+
+			// Отправка данных, если это возможно
+
+			//if (SocketInfo->BytesRECV > SocketInfo->BytesSEND)
+			//{
+			//	char sockets[1024];
+			//	sprintf_s(sockets, sizeof(sockets), "users=%d", SocketArray[1]->Socket);
+			//	for (int i = 2; i < sizeof(SocketArray); i++) {
+			//		if (SocketArray[i] == NULL)
+			//			break;
+			//		sprintf_s(sockets, sizeof(sockets), "%s&%d", sockets, SocketArray[i]->Socket);
+			//	}
+			//	/*SocketInfo->DataBuf.buf =
+			//		SocketInfo->Buffer + SocketInfo->BytesSEND;*/
+			//	SocketInfo->DataBuf.buf = sockets;
+			//	SocketInfo->DataBuf.len = sizeof(sockets);
+			//	for (int i = 1; i < sizeof(SocketArray); i++) {
+			//		if (SocketArray[i] == NULL)
+			//			break;
+			//		if (WSASend(SocketArray[i]->Socket,
+			//			&(SocketInfo->DataBuf), 1,
+			//			&SendBytes, 0, NULL, NULL) ==
+			//			SOCKET_ERROR)
+			//		{
+			//			if (WSAGetLastError() != WSAEWOULDBLOCK)
+			//			{
+			//				sprintf_s(Str, sizeof(Str),
+			//					"WSASend() failed with "
+			//					"error %d", WSAGetLastError());
+			//				pLB->AddString(Str);
+			//				FreeSocketInformation(
+			//					Event - WSA_WAIT_EVENT_0, Str, pLB);
+			//				return 1;
+			//			}
+
+			//			// Произошла ошибка WSAEWOULDBLOCK. 
+			//			// Событие FD_WRITE будет отправлено, когда
+			//			// в буфере будет больше свободного места
+			//		}
+			//	}
+			//	SocketInfo->BytesSEND += SendBytes;
+
+			//	/*if (SocketInfo->BytesSEND ==
+			//		SocketInfo->BytesRECV)
+			//	{*/
+			//		SocketInfo->BytesSEND = 0;
+			//		SocketInfo->BytesRECV = 0;
+			//	//}
+			//}
 		}
 		if (NetworkEvents.lNetworkEvents & FD_CLOSE)
 		{
@@ -495,9 +626,9 @@ UINT ListenThread(PVOID lpParam)
 				"Closing socket information %d",
 				SocketArray[Event - WSA_WAIT_EVENT_0]->Socket);
 			pLB->AddString(Str);
-
 			FreeSocketInformation(Event - WSA_WAIT_EVENT_0,
 				Str, pLB);
+			sendUsers();
 		}
    } // while
    return 0;

@@ -14,7 +14,7 @@ public:
 
 // Dialog Data
 #ifdef AFX_DESIGN_TIME
-	enum { IDD = IDD_CLIENT_DIALOG };
+	enum { IDD = IDD_CLIENTMESSANGER_DIALOG };
 #endif
 
 protected:
@@ -40,4 +40,6 @@ public:
 	int m_Number;
 	afx_msg void OnBnClickedConnect();
 	afx_msg void OnBnClickedSend();
+	char friendSocket[6];
+	afx_msg void OnBnClickedUser();
 };
