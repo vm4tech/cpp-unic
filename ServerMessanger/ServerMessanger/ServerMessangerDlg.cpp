@@ -253,6 +253,7 @@ void sendMessage(char* message, SOCKET from, char* to) {
 	char postMessage[1024];
 	char Str[1024];
 	//char to2[1024];
+	postMessage[0] = '\0';
 	LPSOCKET_INFORMATION SocketInfo = 0;
 	for (int i = 0; i < sizeof(SocketArray); i++) {
 		if (SocketArray[i] != NULL) {
@@ -270,6 +271,11 @@ void sendMessage(char* message, SOCKET from, char* to) {
 			break;
 		
 	}
+	if (postMessage[0] == '\0') {
+		SocketInfo = SocketArray[0];
+		sprintf_s(postMessage, sizeof(postMessage), "message=error%0%0");
+	}
+
 	SocketInfo->DataBuf.buf = postMessage;
 	SocketInfo->DataBuf.len = sizeof(postMessage);
 
@@ -286,26 +292,26 @@ void sendMessage(char* message, SOCKET from, char* to) {
 }
 
 void sendUsers() {
-	char users[1024];
+	char listusers[1024];
 	char Str[1024];
 	char to2[1024];
 	int size = 0;
 	LPSOCKET_INFORMATION SocketInfo = SocketArray[0];
 	if (SocketArray[1] == NULL)
 		return;
-	sprintf_s(users, sizeof(users), "users=%d", SocketArray[1]->Socket);
+	sprintf_s(listusers, sizeof(listusers), "users=%d", SocketArray[1]->Socket);
 	for (int i = 2; i < sizeof(SocketArray); i++) {
 		if (SocketArray[i] == NULL)
 			break;
-		sprintf_s(users, sizeof(users), "%s&%d", users, SocketArray[i]->Socket);
+		sprintf_s(listusers, sizeof(listusers), "%s&%d", listusers, SocketArray[i]->Socket);
 	}
-	for (int i = 0; i < sizeof(users); i++) {
-		if (users[i] != '\0')
+	for (int i = 0; i < sizeof(listusers); i++) {
+		if (listusers[i] != '\0')
 			size++;
 		else
 			break;
 	}
-	SocketInfo->DataBuf.buf = users;
+	SocketInfo->DataBuf.buf = listusers;
 	SocketInfo->DataBuf.len = size+1;
 	for (int i = 1; i < sizeof(SocketArray); i++) {
 		if (SocketArray[i] == NULL)
@@ -533,7 +539,8 @@ UINT ListenThread(PVOID lpParam)
 					* all - масовая рассылка (all=message&from)
 					* 
 					*/
-
+					SocketInfo->DataBuf.buf[RecvBytes] = '\0';
+					SocketInfo->Buffer[RecvBytes] = '\0';
 					parsedMess = getParserMessage(SocketInfo->Buffer);
 					// Можно потом все сообщения перевести в константы
 					if (strcmp(parsedMess[0], "message") == 0) {

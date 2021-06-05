@@ -16,9 +16,7 @@
 #include "ClientMessanger.h"
 #include "ClientMessangerDlg.h"
 #include "afxdialogex.h"
-
 #include <winsock2.h>
-
 #define DEFAULT_COUNT	1
 #define DEFAULT_PORT	5150
 #define DEFAULT_BUFFER	2048
@@ -28,20 +26,28 @@ UINT Recv(LPVOID pParam);
 SOCKET m_sClient;
 CListBox m_ListBox;
 CListBox m_Users;
+
 // CClientMessangerDlg dialog
-// Задумка на сохранение диалогов
-struct ChatUser {
+struct Users {
 	char friendSocket[6];
-	CListBox currentChat;
-}ChatUser;
+	// Надо вместо ЛИСТБОКСА хранить просто массив строк
+	/*CListBox *currentChat;*/
+	char *currentChat[256];
+};
+CWnd* parent;
 // номер друга
 char friendSocket[6];
+// Текущий юзер
+Users currentUser;
+// Список юзеров
+Users users[256];
 
 CClientMessangerDlg::CClientMessangerDlg(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_CLIENTMESSANGER_DIALOG, pParent)
 	, m_Number(DEFAULT_COUNT)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+	parent = pParent;
 }
 
 void CClientMessangerDlg::DoDataExchange(CDataExchange* pDX)
@@ -73,8 +79,8 @@ BOOL CClientMessangerDlg::OnInitDialog()
 
 	// TODO: Add extra initialization here
 	char Str[128];
-
-
+	
+	
 	GetDlgItem(IDC_MESSAGE)->SetWindowText(DEFAULT_MESSAGE);
 	SetConnected(false);
 	GetDlgItem(IDC_SEND)->EnableWindow(false);
@@ -264,10 +270,35 @@ UINT Recv(LPVOID pParam) {
 				}
 			}
 			// Добавляем пользовтелей именно здесь
+			for (int i = 0;; i++) {
+				int flag = 0;
+				if (user[i][0] == '\0')
+					break;
+				for (int j = 0;; j++) {
+					if (users[j].friendSocket[0] == '\0') {
+						strcpy(users[j].friendSocket, user[i]);
+						break;
+					}
+					else if (strcmp(users[j].friendSocket, user[i]) == 0) {
+						break;
+						///*currentUser.friendSocket = users[j].friendSocket;
+						//currentUser.currentChat = users[j].currentChat;*/
+						//flag = 1;
+						//break;
+					}
+					
+					
+						// Добавляем нового юзера в список
+						
+					
+				}
+				/*if (flag == 1)
+					break;*/
+			}
 			m_Users.ResetContent();
 			for (int i = 0; i < 256; i++) {
-				if (user[i][0] != '\0')
-					m_Users.AddString(user[i]);
+				if (users[i].friendSocket[0] != '\0')
+					m_Users.AddString(users[i].friendSocket);
 				else
 					break;
 			}
@@ -306,10 +337,10 @@ void CClientMessangerDlg::OnBnClickedSend()
 	GetDlgItem(IDC_MESSAGE)->GetWindowText(szMessage, sizeof(szMessage));
 
 	// Отправка данных
-	
-	sprintf_s(Str, sizeof(Str), "message=%s&%d&%s", CString(szMessage), m_sClient, friendSocket);
-	
-	ret = send(m_sClient, Str, strlen(Str), 0);
+	// Баг какой-то
+	int size = sprintf_s(Str, sizeof(Str), "message=%s&%d&%s", CString(szMessage), m_sClient, currentUser.friendSocket);
+	Str[size] = '\0';
+	ret = send(m_sClient, Str, size, 0);
 	sprintf_s(Str, sizeof(Str), "You:%s", CString(szMessage));
 	m_ListBox.AddString(Str);
 	if (ret == SOCKET_ERROR)
@@ -323,19 +354,113 @@ void CClientMessangerDlg::OnBnClickedSend()
 
 }
 
+char* setMessages(char* to, char from[]) {
+	to = from;
+	return to;
+}
+// Устанавливает/переносит листбокс в память для конкретного пользователя (при смене пользователей)
+void setInMemoryListBox() {
+	m_ListBox.AddString(friendSocket);
+	for (int i = 0;; i++) {
+		if (users[i].friendSocket[0] != '\0') {
+			// Можно оптимизировать, путем запоминания индекса пользователя в списке, но нужно больше времени для разработки...
+			if (strcmp(users[i].friendSocket, currentUser.friendSocket) == 0) {
+				/*users[i].currentChat->ResetContent();*/
+				// очищаем весь список
+				for (int k = 0; i < 256; k++) {
+					if (users[i].currentChat[k] == NULL)
+						break;
+					users[i].currentChat[k] = NULL;
+				}
+				// копируем список
+				for (int j = 0; j < m_ListBox.GetCount(); j++) {
+					char copy[256];
+					char help[256];
+					/*currentUser.currentChat->GetText(i, copy);
+					users[i].currentChat->AddString(copy);*/
+					m_ListBox.GetText(j, copy);
+						strcpy(help, copy);
+					users[i].currentChat[j] = help;
+					
+					// мб будут проблемы с ууказателем
+					/*users[i].currentChat[j] = setMessages(users[i].currentChat[j], copy);*/
+					
+				}
+				break;
+			}
+		}
+		else
+			break;
+	}
+	
+}
+
+// Копируем ИЗ памяти в сам листбокс для отображения сообщений
+void setFromMemoryListBox(char* friendSocket2) {
+	for (int i = 0;; i++) {
+		if (users[i].friendSocket[0] != '\0') {
+			// Можно оптимизировать, путем запоминания индекса пользователя в списке, но нужно больше времени для разработки...
+			if (strcmp(users[i].friendSocket, friendSocket2) == 0) {
+				m_ListBox.ResetContent();
+				// копируем список
+				for (int j = 0; j < 256; j++) {
+					CString copy = "";
+					if (users[i].currentChat[j] == NULL)
+						break;
+					m_ListBox.AddString(users[i].currentChat[j]);
+				}
+				break;
+			}
+		}else
+			break;
+	}
+}
 void CClientMessangerDlg::OnBnClickedUser()
 {
 	// TODO: Add your control notification handler code here
-	GetDlgItem(IDC_SEND)->EnableWindow(true);
+	
+
 	int index;
 	CString strText;
 	char help[6];
 	index = m_Users.GetCurSel();
+	// Надо сделать предупреждение
+	if (index == -1)
+		return;
+	GetDlgItem(IDC_SEND)->EnableWindow(true);
 	m_Users.GetText(index, help);
-	m_ListBox.ResetContent();
+	/*m_ListBox.ResetContent();*/
 	//sprintf_s(Str, sizeof(Str), "Чат с пользователем: %s", friendSocket);
 	// Копируем значение, т.к. GetText копирует значение в буфер
-	strcpy(friendSocket, help);
-	m_ListBox.AddString(friendSocket);
+	/*strcpy(friendSocket, help);*/
+	for (int i = 0; i < sizeof(help); i++) {
+		friendSocket[i] = help[i];
+	}
+	
+	// Если не только зашел в приложение
+	if (currentUser.friendSocket[0] != '\0') {
+		// Если пользователь не выбрал снова того же друга
+		if (strcmp(currentUser.friendSocket, friendSocket) != 0) {
+			setInMemoryListBox();
+			setFromMemoryListBox(friendSocket);
+		/*	m_ListBox.AddString(friendSocket);*/
+			// Если не новая переписка
+			/*if (m_ListBox.GetCount() != 0) {
 
+				for (int i = 0; i < currentUser.currentChat.GetCount(); i++) {
+
+				}
+			}
+			else {
+
+			}*/
+		
+			strcpy(currentUser.friendSocket, friendSocket);
+		}
+	}
+	else {
+		strcpy(currentUser.friendSocket, friendSocket);
+		
+		/*currentUser.currentChat->AddString((LPCTSTR)"firstMessage");*/
+	}
 }

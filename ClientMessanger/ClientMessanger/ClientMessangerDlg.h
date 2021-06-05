@@ -4,7 +4,7 @@
 
 #pragma once
 
-
+#include <list>
 // CClientMessangerDlg dialog
 class CClientMessangerDlg : public CDialogEx
 {
