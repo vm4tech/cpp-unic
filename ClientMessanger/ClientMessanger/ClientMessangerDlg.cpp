@@ -211,6 +211,7 @@ void CClientMessangerDlg::OnBnClickedConnect()
 	send(m_sClient, Str, strlen(Str), 0);
 	// Запускает поток на прослушивание сокета на сервере
 	AfxBeginThread(Recv, NULL);
+
 }
 
 char** getParserMessage(char* buf) {
@@ -342,7 +343,6 @@ UINT Recv(LPVOID pParam) {
 				for (int j = 0;; j++) {
 					if (users[j].friendSocket[0] == '\0') {
 						strcpy(users[j].friendSocket, user[i]);
-						strcpy(users[j].currentChat[0], users[j].friendSocket);
 						break;
 					}
 					else if (strcmp(users[j].friendSocket, user[i]) == 0) {
@@ -378,6 +378,7 @@ UINT Recv(LPVOID pParam) {
 				if (users[i].friendSocket[0] != '\0')
 					if (i == 0) {
 						sprintf_s(Str, sizeof(Str), "%s (я)", users[i].friendSocket);
+						strcpy(currentUser.friendSocket, users[i].friendSocket);
 						m_Users.AddString(Str);
 					}
 					else
