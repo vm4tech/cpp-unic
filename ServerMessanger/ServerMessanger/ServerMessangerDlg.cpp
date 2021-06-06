@@ -218,11 +218,11 @@ void CServerMessangerDlg::OnBnClickedStart()
 		AfxMessageBox("Incorrect Port number");
 		return;
 	}
-
+	sprintf_s(Str, sizeof(Str), "Server has been started on port:%d", iPort);
+	m_ListBox.AddString(Str);
 	AfxBeginThread(ListenThread, NULL);
 
 	GetDlgItem(IDC_START)->EnableWindow(false);
-
 }
 
 char** getParserMessage(char* buf) {
@@ -263,7 +263,7 @@ void sendMessage(char* message, SOCKET from, char* to) {
 			//sprintf_s(to2, sizeof(to2), "%d", from);
 			if (strcmp(Str, to) == 0) {
 				SocketInfo = SocketArray[i];
-				sprintf_s(postMessage, sizeof(postMessage), "message=%s&%d", message, from);
+				sprintf_s(postMessage, sizeof(postMessage), "message=%s&%d&%s", message, from, to);
 			}
 
 		}
@@ -273,7 +273,7 @@ void sendMessage(char* message, SOCKET from, char* to) {
 	}
 	if (postMessage[0] == '\0') {
 		SocketInfo = SocketArray[0];
-		sprintf_s(postMessage, sizeof(postMessage), "message=error%0%0");
+		sprintf_s(postMessage, sizeof(postMessage), "message=error&0&0");
 	}
 
 	SocketInfo->DataBuf.buf = postMessage;

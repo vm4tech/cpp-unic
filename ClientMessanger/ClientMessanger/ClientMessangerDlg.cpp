@@ -32,7 +32,9 @@ struct Users {
 	char friendSocket[6];
 	// Надо вместо ЛИСТБОКСА хранить просто массив строк
 	/*CListBox *currentChat;*/
-	char *currentChat[256];
+	/*char *currentChat[256];*/
+	//  Можно еще попробовать указатель на массив CString (CString* currentChat), но лучше примитивами, как по мне
+	char currentChat[256][256];
 };
 CWnd* parent;
 // номер друга
@@ -84,7 +86,9 @@ BOOL CClientMessangerDlg::OnInitDialog()
 	GetDlgItem(IDC_MESSAGE)->SetWindowText(DEFAULT_MESSAGE);
 	SetConnected(false);
 	GetDlgItem(IDC_SEND)->EnableWindow(false);
-
+	GetDlgItem(IDC_SERVER)->SetWindowText("localhost");
+	sprintf_s(Str, sizeof(Str), "%d", DEFAULT_PORT);
+	GetDlgItem(IDC_PORT)->SetWindowText(Str);
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
 
@@ -131,6 +135,8 @@ void CClientMessangerDlg::SetConnected(bool IsConnected)
 	GetDlgItem(IDC_USER)->EnableWindow(IsConnected);
 	GetDlgItem(IDC_MESSAGE)->EnableWindow(IsConnected);
 	GetDlgItem(IDC_CONNECT)->EnableWindow(!IsConnected);
+	GetDlgItem(IDC_SERVER)->EnableWindow(!IsConnected);
+	GetDlgItem(IDC_PORT)->EnableWindow(!IsConnected);
 }
 
 
@@ -153,8 +159,11 @@ void CClientMessangerDlg::OnBnClickedConnect()
 	//https://github.com/MaseDar/cpp-unic/commit/5158d89cfb96541d3939562612b3e59ebf24f944
 
 	//TODO: Потом сделать, чтобы не только на локалке было (ну это не трудно)
-	strcpy(szServer, "localhost");
-	iPort = DEFAULT_PORT;
+	GetDlgItem(IDC_SERVER)->GetWindowText(szServer, sizeof(szServer));
+	/*strcpy(szServer, "localhost");*/
+	/*iPort = DEFAULT_PORT;*/
+	GetDlgItem(IDC_PORT)->GetWindowText(Str, sizeof(Str));
+	iPort = atoi(Str);
 	if (iPort <= 0 || iPort >= 0x10000)
 	{
 		m_ListBox.AddString((LPTSTR)"Port number incorrect");
@@ -301,6 +310,8 @@ UINT Recv(LPVOID pParam) {
 					m_Users.AddString(users[i].friendSocket);
 				else
 					break;
+
+
 			}
 
 			/*for (int i = 1; i < sizeof(parsedMess); i++) {
@@ -309,8 +320,40 @@ UINT Recv(LPVOID pParam) {
 			}*/
 		}
 		else if (strcmp(parsedMess[0], "message") == 0){
-			sprintf_s(Str, sizeof(Str), "friend: %s", CString(parsedMess[1]));
-			m_ListBox.AddString(Str);
+			// т.е. если у нас открыт диалог не с тем человеком, кто отправил сообщение
+			if (strcmp(currentUser.friendSocket, parsedMess[2]) != 0) {
+				// находим ту самую историю и записываем туда сообщение
+				for (int i = 0;; i++) {
+					if (users[i].friendSocket[0] != '\0') {
+						// Можно оптимизировать, путем запоминания индекса пользователя в списке, но нужно больше времени для разработки...
+						if (strcmp(users[i].friendSocket, parsedMess[2]) == 0){
+							// высчитываем количество сообщений до этого
+							int size = 0;
+							for (int k = 0; k < 256; k++){
+								if (users[i].currentChat[k][0] == '\0') {
+									size = k;
+									break;
+								}
+							}
+							sprintf_s(Str, sizeof(Str), "friend:%s", CString(parsedMess[1]));
+							strcpy(users[i].currentChat[size], Str);
+							
+							sprintf_s(Str, sizeof(Str), "Вам сообщение от %s:%s", CString(parsedMess[2]), CString(parsedMess[1]));
+							/*CString str;
+							str.Format(_T("%s"), Str);
+							MessageBox(str);*/
+							break;
+						}
+					}
+					else
+						break;
+				}
+			}
+			else {
+				sprintf_s(Str, sizeof(Str), "friend: %s", CString(parsedMess[1]));
+				m_ListBox.AddString(Str);
+			}
+			
 		}
 		/*sprintf_s(Str, sizeof(Str), "response from server: %s", szBuffer);*/
 	/*	m_ListBox.AddString((LPTSTR)Str);*/
@@ -337,7 +380,8 @@ void CClientMessangerDlg::OnBnClickedSend()
 	GetDlgItem(IDC_MESSAGE)->GetWindowText(szMessage, sizeof(szMessage));
 
 	// Отправка данных
-	// Баг какой-то
+	if (szMessage[0] == '\0')
+		return;
 	int size = sprintf_s(Str, sizeof(Str), "message=%s&%d&%s", CString(szMessage), m_sClient, currentUser.friendSocket);
 	Str[size] = '\0';
 	ret = send(m_sClient, Str, size, 0);
@@ -348,16 +392,11 @@ void CClientMessangerDlg::OnBnClickedSend()
 		sprintf_s(Str, sizeof(Str), "send() failed: %d", WSAGetLastError());
 		m_ListBox.AddString((LPTSTR)Str);
 	}
-
+	GetDlgItem(IDC_MESSAGE)->SetWindowTextA("");
 	/*sprintf_s(Str, sizeof(Str), "Send %d bytes\n", ret);
 	m_ListBox.AddString((LPTSTR)Str);*/
-
 }
 
-char* setMessages(char* to, char from[]) {
-	to = from;
-	return to;
-}
 // Устанавливает/переносит листбокс в память для конкретного пользователя (при смене пользователей)
 void setInMemoryListBox() {
 	m_ListBox.AddString(friendSocket);
@@ -368,9 +407,9 @@ void setInMemoryListBox() {
 				/*users[i].currentChat->ResetContent();*/
 				// очищаем весь список
 				for (int k = 0; i < 256; k++) {
-					if (users[i].currentChat[k] == NULL)
+					if (users[i].currentChat[k][0] == '\0')
 						break;
-					users[i].currentChat[k] = NULL;
+					users[i].currentChat[k][0] = '\0';
 				}
 				// копируем список
 				for (int j = 0; j < m_ListBox.GetCount(); j++) {
@@ -379,8 +418,8 @@ void setInMemoryListBox() {
 					/*currentUser.currentChat->GetText(i, copy);
 					users[i].currentChat->AddString(copy);*/
 					m_ListBox.GetText(j, copy);
-						strcpy(help, copy);
-					users[i].currentChat[j] = help;
+			/*			strcpy(help, copy);*/
+					strcpy(users[i].currentChat[j], copy);
 					
 					// мб будут проблемы с ууказателем
 					/*users[i].currentChat[j] = setMessages(users[i].currentChat[j], copy);*/
@@ -405,7 +444,7 @@ void setFromMemoryListBox(char* friendSocket2) {
 				// копируем список
 				for (int j = 0; j < 256; j++) {
 					CString copy = "";
-					if (users[i].currentChat[j] == NULL)
+					if (users[i].currentChat[j][0] == '\0')
 						break;
 					m_ListBox.AddString(users[i].currentChat[j]);
 				}
@@ -454,7 +493,7 @@ void CClientMessangerDlg::OnBnClickedUser()
 			else {
 
 			}*/
-		
+			
 			strcpy(currentUser.friendSocket, friendSocket);
 		}
 	}
@@ -463,4 +502,6 @@ void CClientMessangerDlg::OnBnClickedUser()
 		
 		/*currentUser.currentChat->AddString((LPCTSTR)"firstMessage");*/
 	}
+	CWnd* label = GetDlgItem(IDC_TEXT_USER);
+	label->SetWindowTextA(friendSocket);
 }
