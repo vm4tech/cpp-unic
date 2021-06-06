@@ -273,6 +273,27 @@ void deleteUser(int k) {
 	}
 }
 
+void updateMessage(char* from) {
+	char Str[256];
+	m_Users.ResetContent();
+	for (int i = 0; i < 256; i++) {
+		if (users[i].friendSocket[0] != '\0') {
+			if (i == 0) {
+				sprintf_s(Str, sizeof(Str), "%s (я)", users[i].friendSocket);
+				m_Users.AddString(Str);
+			}
+			else if (strcmp(users[i].friendSocket, from) == 0) {
+				sprintf_s(Str, sizeof(Str), "%s *", users[i].friendSocket);
+				m_Users.AddString(Str);
+			}
+			else
+				m_Users.AddString(users[i].friendSocket);
+		}
+			else
+				break;
+	}
+}
+
 UINT Recv(LPVOID pParam) {
 	char	szBuffer[DEFAULT_BUFFER];
 	int ret;
@@ -321,6 +342,7 @@ UINT Recv(LPVOID pParam) {
 				for (int j = 0;; j++) {
 					if (users[j].friendSocket[0] == '\0') {
 						strcpy(users[j].friendSocket, user[i]);
+						strcpy(users[j].currentChat[0], users[j].friendSocket);
 						break;
 					}
 					else if (strcmp(users[j].friendSocket, user[i]) == 0) {
@@ -330,11 +352,6 @@ UINT Recv(LPVOID pParam) {
 						//flag = 1;
 						//break;
 					}
-				
-					
-						// Добавляем нового юзера в список
-						
-					
 				}
 			}
 			// Удаляем пользователей, которые вышли из чата
@@ -355,10 +372,16 @@ UINT Recv(LPVOID pParam) {
 				}
 			}
 
+			// обновляем CListBox
 			m_Users.ResetContent();
 			for (int i = 0; i < 256; i++) {
 				if (users[i].friendSocket[0] != '\0')
-					m_Users.AddString(users[i].friendSocket);
+					if (i == 0) {
+						sprintf_s(Str, sizeof(Str), "%s (я)", users[i].friendSocket);
+						m_Users.AddString(Str);
+					}
+					else
+						m_Users.AddString(users[i].friendSocket);
 				else
 					break;
 
@@ -386,10 +409,14 @@ UINT Recv(LPVOID pParam) {
 									break;
 								}
 							}
+							char *help = parsedMess[2];
 							sprintf_s(Str, sizeof(Str), "friend:%s", CString(parsedMess[1]));
 							strcpy(users[i].currentChat[size], Str);
 							
-							sprintf_s(Str, sizeof(Str), "Вам сообщение от %s:%s", CString(parsedMess[2]), CString(parsedMess[1]));
+							strcpy(Str, CString(help));
+							/*sprintf_s(help, sizeof(help), "friend:%s", parsedMess[2]);*/
+							updateMessage(Str);
+							/*sprintf_s(Str, sizeof(Str), "Вам сообщение от %s:%s", CString(parsedMess[2]), CString(parsedMess[1]));*/
 							/*CString str;
 							str.Format(_T("%s"), Str);
 							MessageBox(str);*/
@@ -513,7 +540,7 @@ void CClientMessangerDlg::OnBnClickedUser()
 
 	int index;
 	CString strText;
-	char help[6];
+	char help[25];
 	char *parsered;
 	index = m_Users.GetCurSel();
 	// Надо сделать предупреждение
@@ -526,8 +553,13 @@ void CClientMessangerDlg::OnBnClickedUser()
 	// Копируем значение, т.к. GetText копирует значение в буфер
 	/*strcpy(friendSocket, help);*/
 	parsered = parserUserListBox(help);
+
 	for (int i = 0; i < sizeof(parsered); i++) {
 		friendSocket[i] = parsered[i];
+	}
+	if (index != 0) {
+		m_Users.DeleteString(index);
+		m_Users.InsertString(index, friendSocket);
 	}
 	
 	// Если не только зашел в приложение

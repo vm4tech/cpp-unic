@@ -223,6 +223,7 @@ void CServerMessangerDlg::OnBnClickedStart()
 	AfxBeginThread(ListenThread, NULL);
 
 	GetDlgItem(IDC_START)->EnableWindow(false);
+
 }
 
 char** getParserMessage(char* buf) {
@@ -299,23 +300,29 @@ void sendUsers() {
 	LPSOCKET_INFORMATION SocketInfo = SocketArray[0];
 	if (SocketArray[1] == NULL)
 		return;
-	sprintf_s(listusers, sizeof(listusers), "users=%d", SocketArray[1]->Socket);
-	for (int i = 2; i < sizeof(SocketArray); i++) {
-		if (SocketArray[i] == NULL)
-			break;
-		sprintf_s(listusers, sizeof(listusers), "%s&%d", listusers, SocketArray[i]->Socket);
-	}
-	for (int i = 0; i < sizeof(listusers); i++) {
-		if (listusers[i] != '\0')
-			size++;
-		else
-			break;
-	}
-	SocketInfo->DataBuf.buf = listusers;
-	SocketInfo->DataBuf.len = size+1;
+	
+	
 	for (int i = 1; i < sizeof(SocketArray); i++) {
 		if (SocketArray[i] == NULL)
 			break;
+		// формируем список пользователей для каждого сокета (в начале строчки стоим мы)
+		sprintf_s(listusers, sizeof(listusers), "users=%d", SocketArray[i]->Socket);
+		for (int j = 1; j< sizeof(SocketArray); j++) {
+			if (SocketArray[j] == NULL)
+				break;
+			if (SocketArray[i]->Socket == SocketArray[j]->Socket)
+				continue;
+			sprintf_s(listusers, sizeof(listusers), "%s&%d", listusers, SocketArray[j]->Socket);
+		}
+		for (int j = 0; j < sizeof(listusers); j++) {
+			if (listusers[j] != '\0')
+				size++;
+			else
+				break;
+		}
+		SocketInfo->DataBuf.buf = listusers;
+		SocketInfo->DataBuf.len = size + 1;
+
 		if (WSASend(SocketArray[i]->Socket,
 			&(SocketInfo->DataBuf), 1,
 			&SendBytes, 0, NULL, NULL) ==
