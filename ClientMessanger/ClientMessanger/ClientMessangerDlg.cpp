@@ -30,13 +30,9 @@ CListBox m_Users;
 // CClientMessangerDlg dialog
 struct Users {
 	char friendSocket[6];
-	// Надо вместо ЛИСТБОКСА хранить просто массив строк
-	/*CListBox *currentChat;*/
-	/*char *currentChat[256];*/
 	//  Можно еще попробовать указатель на массив CString (CString* currentChat), но лучше примитивами, как по мне
 	char currentChat[256][256];
 };
-CWnd* parent;
 // номер друга
 char friendSocket[6];
 // Текущий юзер
@@ -49,7 +45,6 @@ CClientMessangerDlg::CClientMessangerDlg(CWnd* pParent /*=nullptr*/)
 	, m_Number(DEFAULT_COUNT)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
-	parent = pParent;
 }
 
 void CClientMessangerDlg::DoDataExchange(CDataExchange* pDX)
@@ -89,6 +84,7 @@ BOOL CClientMessangerDlg::OnInitDialog()
 	GetDlgItem(IDC_SERVER)->SetWindowText("localhost");
 	sprintf_s(Str, sizeof(Str), "%d", DEFAULT_PORT);
 	GetDlgItem(IDC_PORT)->SetWindowText(Str);
+	GetDlgItem(IDC_MESSAGE)->EnableWindow(false);
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
 
@@ -133,7 +129,6 @@ void CClientMessangerDlg::SetConnected(bool IsConnected)
 {
 	m_IsConnected = IsConnected;
 	GetDlgItem(IDC_USER)->EnableWindow(IsConnected);
-	GetDlgItem(IDC_MESSAGE)->EnableWindow(IsConnected);
 	GetDlgItem(IDC_CONNECT)->EnableWindow(!IsConnected);
 	GetDlgItem(IDC_SERVER)->EnableWindow(!IsConnected);
 	GetDlgItem(IDC_PORT)->EnableWindow(!IsConnected);
@@ -153,15 +148,8 @@ void CClientMessangerDlg::OnBnClickedConnect()
 
 	char Str[256];
 
-	/*GetDlgItem(IDC_SERVER)->GetWindowText(szServer, sizeof(szServer));
-	GetDlgItem(IDC_PORT)->GetWindowText(Str, sizeof(Str));
-	iPort = atoi(Str);*/
-	//https://github.com/MaseDar/cpp-unic/commit/5158d89cfb96541d3939562612b3e59ebf24f944
-
-	//TODO: Потом сделать, чтобы не только на локалке было (ну это не трудно)
+	// Получаем значения из полей, для подключения к порту и серверу
 	GetDlgItem(IDC_SERVER)->GetWindowText(szServer, sizeof(szServer));
-	/*strcpy(szServer, "localhost");*/
-	/*iPort = DEFAULT_PORT;*/
 	GetDlgItem(IDC_PORT)->GetWindowText(Str, sizeof(Str));
 	iPort = atoi(Str);
 	if (iPort <= 0 || iPort >= 0x10000)
@@ -205,19 +193,24 @@ void CClientMessangerDlg::OnBnClickedConnect()
 		return;
 	}
 	SetConnected(true);
-	// 
+	// Формируем сообщение для сервера ( на сервере парсим все сообщения и уже принимаем решения)
+	// шаблон: connect=user 
 	sprintf_s(Str, sizeof(Str), "connect=%d", m_sClient);
-	// Отправляем приветственное сообщение, чтобы у всех пользоваетелей обновился список "активных пользователей"
+	// Отправляем приветственное сообщение, чтобы у всех пользоваетелей обновился список "активных пользователей" (сервер отправляет ответный user=...)
 	send(m_sClient, Str, strlen(Str), 0);
-	// Запускает поток на прослушивание сокета на сервере
+	// Запускает поток на прослушивание сокета, чтобы мы всегда смогли получить новые данные
 	AfxBeginThread(Recv, NULL);
 
 }
 
+/* 
+* Парсер сообщений от сервера. 
+* Т.к. я передаю строчку в формате: команда=данные, то необходим парсер для корректного обмена информацией
+*/
 char** getParserMessage(char* buf) {
 	char* params[2];
 	char* parsed[10], * temp;
-
+	// разбиваем на первые 2 части (до = и после)
 	temp = strtok(buf, "=");
 	int i = 0;
 	while (temp != NULL)
@@ -227,7 +220,7 @@ char** getParserMessage(char* buf) {
 		params[i++] = temp;
 		temp = strtok(NULL, "=");
 	}
-
+	// т.к. после = идет наша информация, то мы парсим их отдельно (они идут в формате data&data&...)
 	temp = strtok(params[1], "&");
 	i--;
 	while (temp != NULL)
@@ -236,29 +229,21 @@ char** getParserMessage(char* buf) {
 		temp = strtok(NULL, "&");
 	}
 	parsed[i] = '\0';
-
+	// возвращаем итоговую ссылку
 	return parsed;
 }
 
+// Парсер для списка пользователей (необходим для корректного получения socket из списка, т.к. в m_Users может быть 888 (я) или * (что символизирует непрочитанное сообщение))
 char* parserUserListBox(char* help) {
 	char* params[2];
 	char* parsed[10], * temp;
 
 	temp = strtok(help, " ");
 	int i = 0;
-
-	/*temp = strtok(params[1], "&");
-	i--;
-	while (temp != NULL)
-	{
-		parsed[i++] = temp;
-		temp = strtok(NULL, "&");
-	}
-	parsed[i] = '\0';*/
-
 	return temp;
 }
-// Удаляем юзера из нашего списка
+
+// Удаляем юзера из нашего списка, т.к. он вышел из чата
 void deleteUser(int k) {
 	for (int i = k;; i++) {
 		if (users[i].friendSocket[0] == '\0')
@@ -274,6 +259,8 @@ void deleteUser(int k) {
 	}
 }
 
+// Обновляем список пользователей, т.к. пришло сообщение (функция очищает список пользователей и строит новый с пользователями, которые написали)
+// Наверно, можно было бы сделать через получение конкретной строчки и замена там значения, но я изначально додумался только до этого варианта...
 void updateMessage(char* from) {
 	char Str[256];
 	m_Users.ResetContent();
@@ -295,6 +282,7 @@ void updateMessage(char* from) {
 	}
 }
 
+// Бесконечный прослушиватель, который ждет обновленную информацию на сокете
 UINT Recv(LPVOID pParam) {
 	char	szBuffer[DEFAULT_BUFFER];
 	int ret;
@@ -312,7 +300,9 @@ UINT Recv(LPVOID pParam) {
 			break;
 		}
 		szBuffer[ret] = '\0';
+		// Получаем распарсенную строчку. В 0 элементе у нас строчка с коммандой
 		parsedMess = getParserMessage(szBuffer);
+		// Создаем массив пользователей, чтобы записать в неё все пришедшие данные с сервера
 		char user[256][6];
 		// выводим в m_Users список пользователей (только мы делаем ручное копирование, т.к. по-другому почему-то все портится... Скорее всего, из-за того, что указатели перезаписываются, и что-то не отрабатывает)
 		if (strcmp(parsedMess[0], "users") == 0) {
@@ -327,14 +317,15 @@ UINT Recv(LPVOID pParam) {
 							break;
 						}
 					}
-
 				}
 				else {
 					user[i-1][0] = '\0';
 					break;
 				}
 			}
-			// Добавляем пользовтелей именно здесь
+
+			// Проверяем пришедших пользователей с локальными (users).
+			// В случае, если нет пользователя в локальном хранилище, то дополняем локальные данные новым пользователем.
 			for (int i = 0;; i++) {
 				int flag = 0;
 				if (user[i][0] == '\0') {
@@ -347,15 +338,12 @@ UINT Recv(LPVOID pParam) {
 					}
 					else if (strcmp(users[j].friendSocket, user[i]) == 0) {
 						break;
-						///*currentUser.friendSocket = users[j].friendSocket;
-						//currentUser.currentChat = users[j].currentChat;*/
-						//flag = 1;
-						//break;
 					}
 				}
 			}
 			// Удаляем пользователей, которые вышли из чата
 			// user - полученные данные, users - наши локальные данные
+			// В случае, если есть пользователь в локальном хранилище, но пришедших данных нет, то удаляем из локального хранилища пользователя.
 			for (int i = 0;; i++) {
 				if (users[i].friendSocket[0] == '\0')
 					break;
@@ -368,11 +356,12 @@ UINT Recv(LPVOID pParam) {
 					}
 				}
 				if (flag == 0) {
+					// Функция удаления
 					deleteUser(i);
 				}
 			}
 
-			// обновляем CListBox
+			// обновляем CListBox, и отрисовываем всех пользователей заново
 			m_Users.ResetContent();
 			for (int i = 0; i < 256; i++) {
 				if (users[i].friendSocket[0] != '\0')
@@ -388,21 +377,17 @@ UINT Recv(LPVOID pParam) {
 
 
 			}
-
-			/*for (int i = 1; i < sizeof(parsedMess); i++) {
-				strcpy(Str, parsedMess[i]);
-				m_Users.AddString(Str);
-			}*/
 		}
+		// Если пришло сообщение (формат сообщения - message=text&from&to)
 		else if (strcmp(parsedMess[0], "message") == 0){
-			// т.е. если у нас открыт диалог не с тем человеком, кто отправил сообщение
+			// Проверяем если у нас открыт диалог не с тем человеком, кто отправил сообщение (необходимо для того, чтобы отрисовывались сообщения от других пользователей)
 			if (strcmp(currentUser.friendSocket, parsedMess[2]) != 0) {
-				// находим ту самую историю и записываем туда сообщение
+				// Находим в локальном хранилище массив с текстом, и записываем в конец пришедшее сообщение
 				for (int i = 0;; i++) {
 					if (users[i].friendSocket[0] != '\0') {
 						// Можно оптимизировать, путем запоминания индекса пользователя в списке, но нужно больше времени для разработки...
 						if (strcmp(users[i].friendSocket, parsedMess[2]) == 0){
-							// высчитываем количество сообщений до этого
+							// высчитываем количество сообщений до этого... Скорее всего, это кривой способ((
 							int size = 0;
 							for (int k = 0; k < 256; k++){
 								if (users[i].currentChat[k][0] == '\0') {
@@ -410,17 +395,14 @@ UINT Recv(LPVOID pParam) {
 									break;
 								}
 							}
+							// запоминаю ссылку на нашего автора сообщения, т.к. после следующей строчки с ссылками что-то происходит, видимо перезаписываются или что-то...
 							char *help = parsedMess[2];
 							sprintf_s(Str, sizeof(Str), "friend:%s", CString(parsedMess[1]));
+							// Добавляем в последнюю строчку сообщение
 							strcpy(users[i].currentChat[size], Str);
-							
+							// Формируем строчку для функции обновления списка пользователей (чтобы поставилось *)
 							strcpy(Str, CString(help));
-							/*sprintf_s(help, sizeof(help), "friend:%s", parsedMess[2]);*/
 							updateMessage(Str);
-							/*sprintf_s(Str, sizeof(Str), "Вам сообщение от %s:%s", CString(parsedMess[2]), CString(parsedMess[1]));*/
-							/*CString str;
-							str.Format(_T("%s"), Str);
-							MessageBox(str);*/
 							break;
 						}
 					}
@@ -434,8 +416,7 @@ UINT Recv(LPVOID pParam) {
 			}
 			
 		}
-		/*sprintf_s(Str, sizeof(Str), "response from server: %s", szBuffer);*/
-	/*	m_ListBox.AddString((LPTSTR)Str);*/
+	
 	}
 	return 0;
 }
@@ -483,7 +464,6 @@ void setInMemoryListBox() {
 		if (users[i].friendSocket[0] != '\0') {
 			// Можно оптимизировать, путем запоминания индекса пользователя в списке, но нужно больше времени для разработки...
 			if (strcmp(users[i].friendSocket, currentUser.friendSocket) == 0) {
-				/*users[i].currentChat->ResetContent();*/
 				// очищаем весь список
 				for (int k = 0; i < 256; k++) {
 					if (users[i].currentChat[k][0] == '\0')
@@ -494,15 +474,9 @@ void setInMemoryListBox() {
 				for (int j = 0; j < m_ListBox.GetCount(); j++) {
 					char copy[256];
 					char help[256];
-					/*currentUser.currentChat->GetText(i, copy);
-					users[i].currentChat->AddString(copy);*/
+					
 					m_ListBox.GetText(j, copy);
-			/*			strcpy(help, copy);*/
 					strcpy(users[i].currentChat[j], copy);
-					
-					// мб будут проблемы с ууказателем
-					/*users[i].currentChat[j] = setMessages(users[i].currentChat[j], copy);*/
-					
 				}
 				break;
 			}
@@ -522,7 +496,6 @@ void setFromMemoryListBox(char* friendSocket2) {
 				m_ListBox.ResetContent();
 				// копируем список
 				for (int j = 0; j < 256; j++) {
-					CString copy = "";
 					if (users[i].currentChat[j][0] == '\0')
 						break;
 					m_ListBox.AddString(users[i].currentChat[j]);
@@ -538,21 +511,18 @@ void CClientMessangerDlg::OnBnClickedUser()
 {
 	// TODO: Add your control notification handler code here
 	
-
 	int index;
 	CString strText;
 	char help[25];
 	char *parsered;
 	index = m_Users.GetCurSel();
-	// Надо сделать предупреждение
+	// Если не выбрал пользователя
 	if (index == -1)
 		return;
 	GetDlgItem(IDC_SEND)->EnableWindow(true);
+	GetDlgItem(IDC_MESSAGE)->EnableWindow(true);
 	m_Users.GetText(index, help);
-	/*m_ListBox.ResetContent();*/
-	//sprintf_s(Str, sizeof(Str), "Чат с пользователем: %s", friendSocket);
 	// Копируем значение, т.к. GetText копирует значение в буфер
-	/*strcpy(friendSocket, help);*/
 	parsered = parserUserListBox(help);
 
 	for (int i = 0; i < sizeof(parsered); i++) {
@@ -563,32 +533,20 @@ void CClientMessangerDlg::OnBnClickedUser()
 		m_Users.InsertString(index, friendSocket);
 	}
 	
-	// Если не только зашел в приложение
+	// Если пользователь не только зашел в приложение (почти всегда true, т.к. позже изменил подход определения текущего пользователя, но страшно убирать)
 	if (currentUser.friendSocket[0] != '\0') {
-		// Если пользователь не выбрал снова того же друга
+		// Если пользователь не выбрал снова того же друга (иначе зачем тратить время на отравку, перенос листбокса)
 		if (strcmp(currentUser.friendSocket, friendSocket) != 0) {
 			setInMemoryListBox();
-			setFromMemoryListBox(friendSocket);
-		/*	m_ListBox.AddString(friendSocket);*/
-			// Если не новая переписка
-			/*if (m_ListBox.GetCount() != 0) {
-
-				for (int i = 0; i < currentUser.currentChat.GetCount(); i++) {
-
-				}
-			}
-			else {
-
-			}*/
-			
+			setFromMemoryListBox(friendSocket);			
 			strcpy(currentUser.friendSocket, friendSocket);
 		}
 	}
 	else {
+		// Ставим пользователя
 		strcpy(currentUser.friendSocket, friendSocket);
-		
-		/*currentUser.currentChat->AddString((LPCTSTR)"firstMessage");*/
 	}
+	// Изменяем текст над листбоксом сообщений (диалог с: *)
 	CWnd* label = GetDlgItem(IDC_TEXT_USER);
 	label->SetWindowTextA(friendSocket);
 }

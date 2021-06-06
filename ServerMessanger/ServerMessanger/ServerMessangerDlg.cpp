@@ -19,6 +19,7 @@
 int  iPort = PORT; 	 // Порт для прослушивания подключений
 bool bPrint = false; // Выводить ли сообщения клиентов
 CListBox m_ListBox;
+
 typedef struct _SOCKET_INFORMATION {
 	CHAR Buffer[DATA_BUFSIZE];
 	WSABUF DataBuf;
@@ -40,43 +41,10 @@ DWORD SendBytes;
 HWND   hWnd_LB;  // Для вывода в других потоках
 
 UINT ListenThread(PVOID lpParam);
+// переменная для парснига сообщений
 char** parsedMess;
 
-// CAboutDlg dialog used for App About
-
-class CAboutDlg : public CDialogEx
-{
-public:
-	CAboutDlg();
-
-// Dialog Data
-#ifdef AFX_DESIGN_TIME
-	enum { IDD = IDD_ABOUTBOX };
-#endif
-
-	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-
-// Implementation
-protected:
-	DECLARE_MESSAGE_MAP()
-};
-
-CAboutDlg::CAboutDlg() : CDialogEx(IDD_ABOUTBOX)
-{
-}
-
-void CAboutDlg::DoDataExchange(CDataExchange* pDX)
-{
-	CDialogEx::DoDataExchange(pDX);
-}
-
-BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
-END_MESSAGE_MAP()
-
-
 // CServerMessangerDlg dialog
-
 
 
 CServerMessangerDlg::CServerMessangerDlg(CWnd* pParent /*=nullptr*/)
@@ -144,18 +112,6 @@ BOOL CServerMessangerDlg::OnInitDialog()
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
 
-void CServerMessangerDlg::OnSysCommand(UINT nID, LPARAM lParam)
-{
-	if ((nID & 0xFFF0) == IDM_ABOUTBOX)
-	{
-		CAboutDlg dlgAbout;
-		dlgAbout.DoModal();
-	}
-	else
-	{
-		CDialogEx::OnSysCommand(nID, lParam);
-	}
-}
 
 // If you add a minimize button to your dialog, you will need the code below
 //  to draw the icon.  For MFC applications using the document/view model,
@@ -223,9 +179,8 @@ void CServerMessangerDlg::OnBnClickedStart()
 	AfxBeginThread(ListenThread, NULL);
 
 	GetDlgItem(IDC_START)->EnableWindow(false);
-
 }
-
+// Парсер сообщений (такой же как и на клиенте)
 char** getParserMessage(char* buf) {
 	char* params[2];
 	char* parsed[10], * temp;
@@ -250,28 +205,30 @@ char** getParserMessage(char* buf) {
 	parsed[i] = '\0';
 	return parsed;
 }
+
+// Функция отравки сообщения
 void sendMessage(char* message, SOCKET from, char* to) {
+
 	char postMessage[1024];
 	char Str[1024];
-	//char to2[1024];
 	postMessage[0] = '\0';
 	LPSOCKET_INFORMATION SocketInfo = 0;
+	// Пробегаем весь список пользователей (сокетов) и ищем сокет пользователя кому отправить сообщение.
 	for (int i = 0; i < sizeof(SocketArray); i++) {
 		if (SocketArray[i] != NULL) {
-
+			// Формируем строчку для поиска (сокет "кому" пришел в char, а сокет "от кого" в другом типе => я решил сравнивать в строчке)
 			sprintf_s(Str, sizeof(Str), "%d", SocketArray[i]->Socket);
-			//// TODO: Только дял теста отправляю сеье
-			//sprintf_s(to2, sizeof(to2), "%d", from);
+			// Если нашли, то запоминаем СокетИнфо и формируем строчку с сообщением 
 			if (strcmp(Str, to) == 0) {
 				SocketInfo = SocketArray[i];
 				sprintf_s(postMessage, sizeof(postMessage), "message=%s&%d&%s", message, from, to);
 			}
-
 		}
 		else
 			break;
 		
 	}
+	// Если мы не смогли не смогли найти "кому" отправить, то отправляем на серверный сокет сообщение с ошибкой
 	if (postMessage[0] == '\0') {
 		SocketInfo = SocketArray[0];
 		sprintf_s(postMessage, sizeof(postMessage), "message=error&0&0");
@@ -279,7 +236,7 @@ void sendMessage(char* message, SOCKET from, char* to) {
 
 	SocketInfo->DataBuf.buf = postMessage;
 	SocketInfo->DataBuf.len = sizeof(postMessage);
-
+	// отправляем сообщение
 	if (WSASend(SocketInfo->Socket,
 		&(SocketInfo->DataBuf), 1,
 		&SendBytes, 0, NULL, NULL) ==
@@ -292,20 +249,21 @@ void sendMessage(char* message, SOCKET from, char* to) {
 
 }
 
+// Функция отправки всех пользователей (сокетов)
 void sendUsers() {
 	char listusers[1024];
 	char Str[1024];
 	char to2[1024];
 	int size = 0;
 	LPSOCKET_INFORMATION SocketInfo = SocketArray[0];
+	// Если нет пользователей, то выходим (1, т.к. 0 сокет занимает сервер)
 	if (SocketArray[1] == NULL)
 		return;
-	
-	
+	// Проходим всех пользователей и для каждого формируем собственную строку users=user&user&..., где 1 юзер - сокет, на который отправляем сообщение (необходимо для отрисовки "я" на клиенте)
 	for (int i = 1; i < sizeof(SocketArray); i++) {
 		if (SocketArray[i] == NULL)
 			break;
-		// формируем список пользователей для каждого сокета (в начале строчки стоим мы)
+		// здесь формируем строчку
 		sprintf_s(listusers, sizeof(listusers), "users=%d", SocketArray[i]->Socket);
 		for (int j = 1; j< sizeof(SocketArray); j++) {
 			if (SocketArray[j] == NULL)
@@ -314,15 +272,17 @@ void sendUsers() {
 				continue;
 			sprintf_s(listusers, sizeof(listusers), "%s&%d", listusers, SocketArray[j]->Socket);
 		}
+		// Получаем размер (скорее всего оч плохой костыль)
 		for (int j = 0; j < sizeof(listusers); j++) {
 			if (listusers[j] != '\0')
 				size++;
 			else
 				break;
 		}
+
 		SocketInfo->DataBuf.buf = listusers;
 		SocketInfo->DataBuf.len = size + 1;
-
+		//  Отправляем сообщение
 		if (WSASend(SocketArray[i]->Socket,
 			&(SocketInfo->DataBuf), 1,
 			&SendBytes, 0, NULL, NULL) ==
@@ -342,6 +302,8 @@ void sendUsers() {
 	SocketInfo->BytesSEND = 0;
 	SocketInfo->BytesRECV = 0;
 }
+
+// Главный поток
 UINT ListenThread(PVOID lpParam)
 {
 	SOCKET Listen;
@@ -535,29 +497,20 @@ UINT ListenThread(PVOID lpParam)
 						return 1;
 					}
 				}
-				else
-				{
-					/* get: Парсер сообщений, шаблон:
-					* param=...
-					* message=asdlasdkals;ld&3213&13821
-					* Параметры (param):
-					* connect - first connect user (con=socket_user)
-					* message - сообщение (mes=message&from&to)
-					* all - масовая рассылка (all=message&from)
-					* 
-					*/
+				else{
+				
+					// Сокращаем буфферы
 					SocketInfo->DataBuf.buf[RecvBytes] = '\0';
 					SocketInfo->Buffer[RecvBytes] = '\0';
+					// Парсим сообщения
 					parsedMess = getParserMessage(SocketInfo->Buffer);
 					// Можно потом все сообщения перевести в константы
+					// Почти Switch case) проверяем тип комманды
 					if (strcmp(parsedMess[0], "message") == 0) {
 						sendMessage(parsedMess[1], SocketInfo->Socket, parsedMess[3]);
 					}
 					else if (strcmp(parsedMess[0], "connect") == 0) {
 						sendUsers();
-					}
-					else if (strcmp(parsedMess[0], "all") == 0) {
-						SocketInfo->BytesRECV = RecvBytes;
 					}
 
 					SocketInfo->BytesRECV = RecvBytes;
@@ -574,57 +527,7 @@ UINT ListenThread(PVOID lpParam)
 					SocketInfo->BytesRECV = 0;
 				}
 			}
-			else {
-			}
-
-			// Отправка данных, если это возможно
-
-			//if (SocketInfo->BytesRECV > SocketInfo->BytesSEND)
-			//{
-			//	char sockets[1024];
-			//	sprintf_s(sockets, sizeof(sockets), "users=%d", SocketArray[1]->Socket);
-			//	for (int i = 2; i < sizeof(SocketArray); i++) {
-			//		if (SocketArray[i] == NULL)
-			//			break;
-			//		sprintf_s(sockets, sizeof(sockets), "%s&%d", sockets, SocketArray[i]->Socket);
-			//	}
-			//	/*SocketInfo->DataBuf.buf =
-			//		SocketInfo->Buffer + SocketInfo->BytesSEND;*/
-			//	SocketInfo->DataBuf.buf = sockets;
-			//	SocketInfo->DataBuf.len = sizeof(sockets);
-			//	for (int i = 1; i < sizeof(SocketArray); i++) {
-			//		if (SocketArray[i] == NULL)
-			//			break;
-			//		if (WSASend(SocketArray[i]->Socket,
-			//			&(SocketInfo->DataBuf), 1,
-			//			&SendBytes, 0, NULL, NULL) ==
-			//			SOCKET_ERROR)
-			//		{
-			//			if (WSAGetLastError() != WSAEWOULDBLOCK)
-			//			{
-			//				sprintf_s(Str, sizeof(Str),
-			//					"WSASend() failed with "
-			//					"error %d", WSAGetLastError());
-			//				pLB->AddString(Str);
-			//				FreeSocketInformation(
-			//					Event - WSA_WAIT_EVENT_0, Str, pLB);
-			//				return 1;
-			//			}
-
-			//			// Произошла ошибка WSAEWOULDBLOCK. 
-			//			// Событие FD_WRITE будет отправлено, когда
-			//			// в буфере будет больше свободного места
-			//		}
-			//	}
-			//	SocketInfo->BytesSEND += SendBytes;
-
-			//	/*if (SocketInfo->BytesSEND ==
-			//		SocketInfo->BytesRECV)
-			//	{*/
-			//		SocketInfo->BytesSEND = 0;
-			//		SocketInfo->BytesRECV = 0;
-			//	//}
-			//}
+			
 		}
 		if (NetworkEvents.lNetworkEvents & FD_CLOSE)
 		{
