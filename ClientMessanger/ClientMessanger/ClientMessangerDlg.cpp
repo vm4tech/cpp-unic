@@ -239,6 +239,40 @@ char** getParserMessage(char* buf) {
 	return parsed;
 }
 
+char* parserUserListBox(char* help) {
+	char* params[2];
+	char* parsed[10], * temp;
+
+	temp = strtok(help, " ");
+	int i = 0;
+
+	/*temp = strtok(params[1], "&");
+	i--;
+	while (temp != NULL)
+	{
+		parsed[i++] = temp;
+		temp = strtok(NULL, "&");
+	}
+	parsed[i] = '\0';*/
+
+	return temp;
+}
+// Удаляем юзера из нашего списка
+void deleteUser(int k) {
+	for (int i = k;; i++) {
+		if (users[i].friendSocket[0] == '\0')
+			break;
+		strcpy(users[i].friendSocket, users[i+1].friendSocket);
+		for (int j = 0; j < 256; j++) {
+			if (users[i+1].currentChat[j][0] == '\0') {
+				users[i].currentChat[j][0] = '\0';
+				break;
+			}
+			strcpy(users[i].currentChat[j], users[i+1].currentChat[j]);
+		}
+	}
+}
+
 UINT Recv(LPVOID pParam) {
 	char	szBuffer[DEFAULT_BUFFER];
 	int ret;
@@ -281,8 +315,9 @@ UINT Recv(LPVOID pParam) {
 			// Добавляем пользовтелей именно здесь
 			for (int i = 0;; i++) {
 				int flag = 0;
-				if (user[i][0] == '\0')
+				if (user[i][0] == '\0') {
 					break;
+				}
 				for (int j = 0;; j++) {
 					if (users[j].friendSocket[0] == '\0') {
 						strcpy(users[j].friendSocket, user[i]);
@@ -295,15 +330,31 @@ UINT Recv(LPVOID pParam) {
 						//flag = 1;
 						//break;
 					}
-					
+				
 					
 						// Добавляем нового юзера в список
 						
 					
 				}
-				/*if (flag == 1)
-					break;*/
 			}
+			// Удаляем пользователей, которые вышли из чата
+			// user - полученные данные, users - наши локальные данные
+			for (int i = 0;; i++) {
+				if (users[i].friendSocket[0] == '\0')
+					break;
+				int flag = 0;
+				for (int j = 0;; j++) {
+					if (user[j][0] == '\0')
+						break;
+					if (strcmp(users[i].friendSocket, user[j]) == 0) {
+						flag++;
+					}
+				}
+				if (flag == 0) {
+					deleteUser(i);
+				}
+			}
+
 			m_Users.ResetContent();
 			for (int i = 0; i < 256; i++) {
 				if (users[i].friendSocket[0] != '\0')
@@ -454,6 +505,7 @@ void setFromMemoryListBox(char* friendSocket2) {
 			break;
 	}
 }
+
 void CClientMessangerDlg::OnBnClickedUser()
 {
 	// TODO: Add your control notification handler code here
@@ -462,6 +514,7 @@ void CClientMessangerDlg::OnBnClickedUser()
 	int index;
 	CString strText;
 	char help[6];
+	char *parsered;
 	index = m_Users.GetCurSel();
 	// Надо сделать предупреждение
 	if (index == -1)
@@ -472,8 +525,9 @@ void CClientMessangerDlg::OnBnClickedUser()
 	//sprintf_s(Str, sizeof(Str), "Чат с пользователем: %s", friendSocket);
 	// Копируем значение, т.к. GetText копирует значение в буфер
 	/*strcpy(friendSocket, help);*/
-	for (int i = 0; i < sizeof(help); i++) {
-		friendSocket[i] = help[i];
+	parsered = parserUserListBox(help);
+	for (int i = 0; i < sizeof(parsered); i++) {
+		friendSocket[i] = parsered[i];
 	}
 	
 	// Если не только зашел в приложение
